@@ -13,27 +13,65 @@
     <title>madDiscovery</title>
 </head>
 <body>
+<div class="panel-overlay"></div>
+
+<!-- Left panel -->
+<div class="panel panel-left panel-cover">
+    <div class="list-block" id="main-menu">
+        <ul class="no-border">
+            <a href="add-event.html" class="item-link close-panel">
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">Add Event</div>
+                    </div>
+                </li>
+            </a>
+            <a href="#" class="item-link close-panel">
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">Settings</div>
+                    </div>
+                </li>
+            </a>
+            <a href="about.html" class="item-link close-panel">
+                <li class="item-content">
+                    <div class="item-inner">
+                        <div class="item-title">About</div>
+                    </div>
+                </li>
+            </a>
+        </ul>
+    </div>
+</div>
+
 <div class="views">
     <div class="view view-main">
-        <div class="pages navbar-fixed">
+        <div class="pages">
             <div class="page" data-page="index">
-                <div class="navbar">
+                <div class="navbar no-border">
                     <div class="navbar-inner">
+                        <div class="left">
+                            <a href="#" class="open-panel link icon-only">
+                                <i class="icon icon-bars"></i>
+                            </a>
+                        </div>
                         <div class="center">madDiscovery</div>
+                        <div class="right">
+                            <a href="add-event.html" class="link icon-only">
+                                <i class="icon icon-plus"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
                 <div class="page-content">
                     <div class="content-block-title">Main Page</div>
-                    <div class="content-block">
-                        <a href="form.html">Form</a>
-                        <br />
-                        <a href="about.html">About app</a>
-                    </div>
+
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 <!--<script type="text/javascript" src="cordova.js"></script>-->
 <script type="text/javascript" src="js/framework7.min.js"></script>
 <script type="text/javascript" src="js/app.js"></script>

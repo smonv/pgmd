@@ -1,0 +1,8 @@
+#main-menu{
+    margin: 0;
+    border: 0;
+}
+
+#main-menu .item-link .item-inner{
+    background-image: none;
+}
