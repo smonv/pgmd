@@ -1,8 +1,12 @@
-#main-menu{
-    margin: 0;
-    border: 0;
-}
-
-#main-menu .item-link .item-inner{
+#main-menu .item-link .item-inner {
     background-image: none;
 }
+
+.list-block ul:before {
+    display: none;
+}
+
+.list-block ul:after {
+    display: none;
+}
+
