@@ -1,19 +1,20 @@
-<div class="page" data-page="event-form">
-    <div class="navbar">
-        <div class="navbar-inner">
-            <div class="left">
-                <a href="#" class="back link">
-                    <i class="icon icon-back"></i>
-                </a>
-            </div>
-            <div class="center">Event</div>
-            <div class="right">
-                <p><a href="#" class="button">Save</a></p>
+<script type="text/template7" id="event">
+    <div class="page" data-page="event-form">
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="back link">
+                        <i class="icon icon-back"></i>
+                    </a>
+                </div>
+                <div class="center">Event {{test}}</div>
+                <div class="right">
+                    <p><a href="#" class="button" id="save-event">Save</a></p>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="page-content">
+        <div class="page-content">
             <form id="event-form">
                 <div class="list-block">
                     <ul>
@@ -21,7 +22,7 @@
                             <div class="item-content">
                                 <div class="item-title label">Event Name</div>
                                 <div class="item-input">
-                                    <input type="text" id="event-name" name="event-name" placeholder="Event Name">
+                                    <input type="text" id="event-name" name="eventName" placeholder="Event Name">
                                 </div>
                             </div>
                         </li>
@@ -29,7 +30,7 @@
                             <div class="item-content">
                                 <div class="item-title label">Date of event</div>
                                 <div class="item-input">
-                                    <input type="date" id="event-date" name="event-date" placeholder="Date of event">
+                                    <input type="date" id="event-date" name="eventDate" placeholder="Date of event">
                                 </div>
                             </div>
                         </li>
@@ -37,7 +38,7 @@
                             <div class="item-content">
                                 <div class="item-title label">Start time</div>
                                 <div class="item-input">
-                                    <input type="datetime-local" id="event-start-time" name="event-start-time"
+                                    <input type="datetime-local" id="event-start-time" name="eventStartTime"
                                            placeholder="Start time">
                                 </div>
                             </div>
@@ -46,7 +47,7 @@
                             <div class="item-content">
                                 <div class="item-title label">Location</div>
                                 <div class="item-input">
-                                <textarea class="resizable" id="event-location" name="event-location"
+                                <textarea class="resizable" id="event-location" name="eventLocation"
                                           placeholder="Location"></textarea>
                                 </div>
                             </div>
@@ -56,7 +57,7 @@
                             <div class="item-content">
                                 <div class="item-title label">Event Organizer</div>
                                 <div class="item-input">
-                                    <input type="text" id="event-organizer" name="event-organizer"
+                                    <input type="text" id="event-organizer" name="eventOrganizer"
                                            placeholder="Event organizer">
                                 </div>
                             </div>
@@ -64,5 +65,6 @@
                     </ul>
                 </div>
             </form>
+        </div>
     </div>
-</div>
+</script>

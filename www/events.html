@@ -1,0 +1,19 @@
+<script type="text/template7" id="events">
+    <div class="list-block media-list" id="event-list">
+        <ul>
+            {{#each events reverse="true"}}
+            <li>
+                <a href="#" class="item-link item-content">
+                    <div class="item-inner">
+                        <div class="item-title-row">
+                            <div class="item-title">{{name}}</div>
+                        </div>
+                        <div class="item-subtile"></div>
+                        <div class="item-text">{{description}}</div>
+                    </div>
+                </a>
+            </li>
+            {{/each}}
+        </ul>
+    </div>
+</script>
