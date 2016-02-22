@@ -15,62 +15,61 @@ var $$ = Dom7;
 
 var mainView = app.addView('.view-main', {});
 
-var eventData = {
-    events: [
-        {
-            name: 'Test',
-            description: 'Lorem Ipsum'
-        },
-        {
-            name: 'Test 2',
-            description: 'Lorem Ipsum 2'
-        }
-    ]
+var db = connect();
+if (!db) {
+    alert("CANNOT CONNECT DATABASE");
+}
+
+createTable(db);
+
+var data = {
+    events: []
 };
 
-loadEventList(eventData);
+listEvent(db, function (events) {
+    data.events = data.events.concat(events);
+    loadEventList(data);
+});
+
+function loadEventList(context) {
+    $$('.page-content #event-list').remove();
+    $$.get('templates/event/list.html', function (d) {
+        var compiledTemplate = Template7.compile($$(d).html());
+        var html = compiledTemplate(context);
+        $$('.page-content').append(html);
+    });
+}
+
+function loadEventForm(context) {
+    $$.get('templates/event/form.html', function (d) {
+        var compiledTemplate = Template7.compile($$(d).html());
+        mainView.router.load({
+            template: compiledTemplate,
+            context: context
+        });
+    });
+}
 
 $$('a.event').click(function (e) {
     e.preventDefault();
-    loadEventForm({test: "aaa"});
+    loadEventForm({action: "Add"});
 });
 
 app.onPageInit('event-form', function (page) {
     $$('div.list-block').removeClass('inputs-list');
     $$('#save-event').on('click', function () {
         var formData = app.formToJSON('#event-form');
-        var event = new Event();
-        event.name = formData.eventName;
-        event.organizer = formData.eventOrganizer;
-        event.location = formData.eventLocation;
-        event.date = formData.eventDate;
-        event.startTime = formData.eventStartTime;
-
-        mainView.router.back();
-        eventData.events.shift();
-        eventData.events.push({
-            name: event.name,
-            description: "Test add"
+        var event = {
+            name: formData.eventName,
+            location: formData.eventLocation,
+            date: formData.eventDate,
+            startTime: formData.eventStartTime,
+            organizer: formData.eventOrganizer,
+        };
+        insertEvent(db, event, function (d) {
+            data.events.push(d);
+            mainView.router.back();
+            loadEventList(data);
         });
-        loadEventList(eventData);
     });
 });
-
-function loadEventList(context) {
-    $$('.page-content #event-list').remove();
-    $$.get('templates/event/list.html', function (data) {
-        var compiledTemplate = Template7.compile($$(data).html());
-        var html = compiledTemplate(context);
-        $$('.page-content').append(html);
-    });
-};
-
-function loadEventForm(context) {
-    $$.get('templates/event/form.html', function (data) {
-        var compiledTemplate = Template7.compile($$(data).html());
-        mainView.router.load({
-            template: compiledTemplate,
-            context: context
-        });
-    });
-};
