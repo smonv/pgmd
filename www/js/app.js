@@ -28,7 +28,7 @@ var eventData = {
     ]
 };
 
-loadEvents(eventData);
+loadEventList(eventData);
 
 $$('a.event').click(function (e) {
     e.preventDefault();
@@ -52,13 +52,13 @@ app.onPageInit('event-form', function (page) {
             name: event.name,
             description: "Test add"
         });
-        loadEvents(eventData);
+        loadEventList(eventData);
     });
 });
 
-function loadEvents(context) {
+function loadEventList(context) {
     $$('.page-content #event-list').remove();
-    $$.get('events.html', function (data) {
+    $$.get('templates/event/list.html', function (data) {
         var compiledTemplate = Template7.compile($$(data).html());
         var html = compiledTemplate(context);
         $$('.page-content').append(html);
@@ -66,7 +66,7 @@ function loadEvents(context) {
 };
 
 function loadEventForm(context) {
-    $$.get('event.html', function (data) {
+    $$.get('templates/event/form.html', function (data) {
         var compiledTemplate = Template7.compile($$(data).html());
         mainView.router.load({
             template: compiledTemplate,
