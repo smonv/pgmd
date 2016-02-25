@@ -7,7 +7,7 @@ function insertEvent(db, event, callback) {
             );
         },
         onError,
-        onCompletedTransaction
+        onCompletedTransaction("INSERT")
     );
 }
 
@@ -31,7 +31,7 @@ function listEvent(db, callback) {
             }, onError);
         },
         onError,
-        onCompletedTransaction
+        onCompletedTransaction("SELECT")
     );
 }
 
@@ -44,6 +44,6 @@ function onSuccess(context, callback) {
     callback(context);
 }
 
-function onCompletedTransaction() {
-    console.log("TRANSACTION COMPLETED!");
+function onCompletedTransaction(action) {
+    console.log(action + " TRANSACTION COMPLETED!");
 }
