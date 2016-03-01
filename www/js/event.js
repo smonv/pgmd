@@ -2,12 +2,11 @@ function insertEvent(db, event, callback) {
     db.transaction(function (tx) {
             tx.executeSql("INSERT INTO events(name, location, date, startTime, organizer) VALUES(?,?,?,?,?)",
                 [event.name, event.location, event.date, event.startTime, event.organizer],
-                onSuccess(event, callback),
+                callback(event),
                 onError
             );
         },
-        onError,
-        onCompletedTransaction("INSERT")
+        onError
     );
 }
 
@@ -30,20 +29,10 @@ function listEvent(db, callback) {
                 callback(events);
             }, onError);
         },
-        onError,
-        onCompletedTransaction("SELECT")
+        onError
     );
 }
 
 function onError(err) {
     console.log("ERROR: " + err.message);
-}
-
-function onSuccess(context, callback) {
-    console.log(context.length);
-    callback(context);
-}
-
-function onCompletedTransaction(action) {
-    console.log(action + " TRANSACTION COMPLETED!");
 }

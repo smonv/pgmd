@@ -1,19 +1,15 @@
 <script type="text/template7" id="events">
-    <div class="list-block media-list" id="event-list">
-        <ul>
-            {{#each events reverse="true"}}
-            <li>
-                <a href="#" class="item-link item-content">
-                    <div class="item-inner">
-                        <div class="item-title-row">
-                            <div class="item-title">{{name}}</div>
-                        </div>
-                        <div class="item-subtile"></div>
-                        <div class="item-text">{{location}}</div>
-                    </div>
-                </a>
-            </li>
-            {{/each}}
-        </ul>
+    {{#each events reverse="true"}}
+    <div class="card">
+        <a href="#" class="event-link">
+            <div class="card-header">{{name}}</div>
+        </a>
+        <div class="card-content">
+            <div class="card-content-inner">
+                <p class="color-gray">{{date}}</p>
+                <p>{{location}}</p>
+            </div>
+        </div>
     </div>
+    {{/each}}
 </script>

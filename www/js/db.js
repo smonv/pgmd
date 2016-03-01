@@ -1,28 +1,16 @@
 function connect() {
-    var db = window.openDatabase("madDiscovery", 1.0, "madDiscovery", 2000000);
-    return db;
+    return window.openDatabase("madDiscovery", '', "madDiscovery", 2000000);
 }
 
 function createTable(db) {
     db.transaction(function (tx) {
-            tx.executeSql("CREATE TABLE IF NOT EXISTS events(eID INTEGER PRIMARY KEY, name, location, date, startTime, organizer)",
-                onSuccess,
-                onError
-            );
+            tx.executeSql("CREATE TABLE IF NOT EXISTS events(" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, name, location, date, startTime, organizer)");
         },
-        onError,
-        onCompletedTransaction
+        onError
     );
 }
 
 function onError(err) {
     console.log("ERROR: " + err.message);
-}
-
-function onSuccess(tx, results) {
-    console.log(results);
-}
-
-function onCompletedTransaction() {
-    console.log("TRANSACTION COMPLETED!");
 }

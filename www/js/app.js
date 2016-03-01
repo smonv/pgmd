@@ -55,8 +55,11 @@ $$('a.event').click(function (e) {
     loadEventForm({action: "Add"});
 });
 
-app.onPageInit('event-form', function (page) {
+app.onPageInit('event-form', function () {
     $$('div.list-block').removeClass('inputs-list');
+    app.calendar({
+        input: '#event-date'
+    });
     $$('#save-event').on('click', function () {
         var formData = app.formToJSON('#event-form');
         var event = {
@@ -64,7 +67,7 @@ app.onPageInit('event-form', function (page) {
             location: formData.eventLocation,
             date: formData.eventDate,
             startTime: formData.eventStartTime,
-            organizer: formData.eventOrganizer,
+            organizer: formData.eventOrganizer
         };
         insertEvent(db, event, function (d) {
             data.events.push(d);
