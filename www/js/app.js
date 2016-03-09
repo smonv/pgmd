@@ -11,6 +11,14 @@ var app = new Framework7({
     }
 });
 
+function notify(message) {
+    app.addNotification({
+        hold: 3000,
+        closeOnClick: true,
+        message: message
+    });
+}
+
 var $$ = Dom7;
 
 var mainView = app.addView('.view-main', {});
@@ -69,10 +77,22 @@ app.onPageInit('event-form', function () {
             startTime: formData.eventStartTime,
             organizer: formData.eventOrganizer
         };
-        insertEvent(db, event, function (d) {
-            data.events.push(d);
-            mainView.router.back();
-            loadEventList(data);
+        validateEvent(event, function (err) {
+            if (err.length > 0) {
+                err.forEach(function (value) {
+                    notify(value);
+                });
+
+            }
+            else {
+                insertEvent(db, event, function (d) {
+                    data.events.push(d);
+                    mainView.router.back();
+                    loadEventList(data);
+                    notify("New event created");
+                });
+            }
         });
+
     });
 });

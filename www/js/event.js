@@ -1,3 +1,17 @@
+function validateEvent(event, callback) {
+    var err = [];
+    if (event.name == "") {
+        err.push("Event name is required!");
+    }
+    if (event.date == "") {
+        err.push("Event date is required!");
+    }
+    if (event.organizer == "") {
+        err.push("Event organizer is required!");
+    }
+    callback(err);
+}
+
 function insertEvent(db, event, callback) {
     db.transaction(function (tx) {
             tx.executeSql("INSERT INTO events(name, location, date, startTime, organizer) VALUES(?,?,?,?,?)",
