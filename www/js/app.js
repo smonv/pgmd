@@ -40,28 +40,39 @@ listEvent(db, function (events) {
 });
 
 function loadEventList(context) {
-    $$('.page-content #event-list').remove();
+    $$('div#event-list').remove();
     $$.get('templates/event/list.html', function (d) {
         var compiledTemplate = Template7.compile($$(d).html());
         var html = compiledTemplate(context);
         $$('.page-content').append(html);
+
+        $$('div.card-header a').on('click', function (e) {
+            var id = $$(this).attr('id');
+            getEvent(db, id, function (event) {
+                loadEventForm({action: 'Edit'}, event);
+            });
+        });
     });
 }
 
-function loadEventForm(context) {
+function loadEventForm(context, event) {
     $$.get('templates/event/form.html', function (d) {
         var compiledTemplate = Template7.compile($$(d).html());
         mainView.router.load({
             template: compiledTemplate,
             context: context
         });
+        if (event != null) {
+            app.formFromJSON('#event-form', event);
+        }
     });
 }
 
 $$('a.event').click(function (e) {
     e.preventDefault();
-    loadEventForm({action: "Add"});
+    loadEventForm({action: "Add"}, null);
 });
+
 
 app.onPageInit('event-form', function () {
     $$('div.list-block').removeClass('inputs-list');
@@ -69,14 +80,7 @@ app.onPageInit('event-form', function () {
         input: '#event-date'
     });
     $$('#save-event').on('click', function () {
-        var formData = app.formToJSON('#event-form');
-        var event = {
-            name: formData.eventName,
-            location: formData.eventLocation,
-            date: formData.eventDate,
-            time: formData.eventTime,
-            organizer: formData.eventOrganizer
-        };
+        var event = app.formToJSON('#event-form');
         validateEvent(event, function (err) {
             if (err.length > 0) {
                 err.forEach(function (value) {
@@ -85,12 +89,26 @@ app.onPageInit('event-form', function () {
 
             }
             else {
-                insertEvent(db, event, function (d) {
-                    data.events.push(d);
-                    mainView.router.back();
-                    loadEventList(data);
-                    sendNotify("New event created");
-                });
+                if (event.id == "") {
+                    insertEvent(db, event, function (d) {
+                        data.events.push(d);
+                        mainView.router.back();
+                        loadEventList(data);
+                        sendNotify("New event created");
+                    });
+                } else {
+                    updateEvent(db, event, function (r) {
+                        console.log(r);
+                        data.events.forEach(function (v, k) {
+                            if (v.id == r.id) {
+                                data.events[k] = r;
+                            }
+                        });
+                        mainView.router.back();
+                        loadEventList(data);
+                        sendNotify("Event Updated");
+                    })
+                }
             }
         });
 

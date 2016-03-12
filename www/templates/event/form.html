@@ -16,13 +16,14 @@
 
         <div class="page-content">
             <form id="event-form">
+                <input type="hidden" id="event-id" name="id" value="{{id}}" />
                 <div class="list-block">
                     <ul>
                         <li>
                             <div class="item-content">
                                 <div class="item-media"><i class="fa fa-group"></i></div>
                                 <div class="item-input">
-                                    <input type="text" id="event-name" name="eventName" placeholder="Name" />
+                                    <input type="text" id="event-name" name="name" placeholder="Name" />
                                 </div>
                             </div>
                         </li>
@@ -30,7 +31,7 @@
                             <div class="item-content">
                                 <div class="item-media"><i class="fa fa-calendar"></i></div>
                                 <div class="item-input">
-                                    <input type="date" id="event-date" name="eventDate" placeholder="Date" />
+                                    <input type="date" id="event-date" name="date" placeholder="Date" />
                                 </div>
                             </div>
                         </li>
@@ -38,7 +39,7 @@
                             <div class="item-content">
                                 <div class="item-media"><i class="fa fa-clock-o"></i></div>
                                 <div class="item-input">
-                                    <input type="time" id="event-time" name="eventTime"
+                                    <input type="time" id="event-time" name="time"
                                            placeholder="Time">
                                 </div>
                             </div>
@@ -47,7 +48,7 @@
                             <div class="item-content">
                                 <div class="item-media"><i class="fa fa-map-marker"></i></div>
                                 <div class="item-input">
-                                <textarea class="resizable" id="event-location" name="eventLocation"
+                                <textarea class="resizable" id="event-location" name="location"
                                           placeholder="Location"></textarea>
                                 </div>
                             </div>
@@ -57,7 +58,7 @@
                             <div class="item-content">
                                 <div class="item-media"><i class="fa fa-group"></i></div>
                                 <div class="item-input">
-                                    <input type="text" id="event-organizer" name="eventOrganizer"
+                                    <input type="text" id="event-organizer" name="organizer"
                                            placeholder="Organizer" />
                                 </div>
                             </div>

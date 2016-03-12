@@ -24,6 +24,29 @@ function insertEvent(db, event, callback) {
     );
 }
 
+function getEvent(db, id, callback) {
+    db.transaction(function (tx) {
+            tx.executeSql("SELECT * FROM events WHERE id = ?",
+                [id],
+                function (tx, results) {
+                    callback(results.rows.item(0));
+                },
+                onError
+            );
+        }, onError
+    );
+}
+
+function updateEvent(db, event, callback) {
+    db.transaction(function (tx) {
+        tx.executeSql("UPDATE events SET name = ?, location = ?, date = ?, time = ?, organizer = ? WHERE id = ?",
+            [event.name, event.location, event.date, event.time, event.organizer, event.id],
+            callback(event),
+            onError
+        );
+    });
+}
+
 function listEvent(db, callback) {
     db.transaction(function (tx) {
             tx.executeSql("SELECT * FROM events", [], function (tx, results) {

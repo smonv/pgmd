@@ -1,15 +1,20 @@
 <script type="text/template7" id="events">
-    {{#each events reverse="true"}}
-    <div class="card">
-        <a href="#" class="event-link">
-            <div class="card-header">{{name}}</div>
-        </a>
-        <div class="card-content">
-            <div class="card-content-inner">
-                <p class="color-gray">{{date}} {{time}}</p>
-                <p>{{location}}</p>
+    <div id="event-list">
+        {{#each events reverse="true"}}
+        <div class="card">
+            <div class="card-header">
+                <a href="#" id="{{id}}">
+                    {{name}}
+                </a>
+            </div>
+
+            <div class="card-content">
+                <div class="card-content-inner">
+                    <p class="color-gray">{{date}} {{time}}</p>
+                    <p>{{location}}</p>
+                </div>
             </div>
         </div>
+        {{/each}}
     </div>
-    {{/each}}
 </script>
