@@ -14,8 +14,8 @@ function validateEvent(event, callback) {
 
 function insertEvent(db, event, callback) {
     db.transaction(function (tx) {
-            tx.executeSql("INSERT INTO events(name, location, date, startTime, organizer) VALUES(?,?,?,?,?)",
-                [event.name, event.location, event.date, event.startTime, event.organizer],
+            tx.executeSql("INSERT INTO events(name, location, date, time, organizer) VALUES(?,?,?,?,?)",
+                [event.name, event.location, event.date, event.time, event.organizer],
                 callback(event),
                 onError
             );
@@ -35,7 +35,7 @@ function listEvent(db, callback) {
                         name: row.name,
                         location: row['location'],
                         date: row['date'],
-                        startTime: row['startTime'],
+                        time: row['time'],
                         organizer: row['organizer']
                     };
                     events.push(row);

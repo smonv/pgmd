@@ -5,7 +5,7 @@ function connect() {
 function createTable(db) {
     db.transaction(function (tx) {
             tx.executeSql("CREATE TABLE IF NOT EXISTS events(" +
-                "id INTEGER PRIMARY KEY AUTOINCREMENT, name, location, date, startTime, organizer)");
+                "id INTEGER PRIMARY KEY AUTOINCREMENT, name, location, date, time, organizer)");
         },
         onError
     );

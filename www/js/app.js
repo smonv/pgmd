@@ -11,7 +11,7 @@ var app = new Framework7({
     }
 });
 
-function notify(message) {
+function sendNotify(message) {
     app.addNotification({
         hold: 3000,
         closeOnClick: true,
@@ -74,13 +74,13 @@ app.onPageInit('event-form', function () {
             name: formData.eventName,
             location: formData.eventLocation,
             date: formData.eventDate,
-            startTime: formData.eventStartTime,
+            time: formData.eventTime,
             organizer: formData.eventOrganizer
         };
         validateEvent(event, function (err) {
             if (err.length > 0) {
                 err.forEach(function (value) {
-                    notify(value);
+                    sendNotify(value);
                 });
 
             }
@@ -89,7 +89,7 @@ app.onPageInit('event-form', function () {
                     data.events.push(d);
                     mainView.router.back();
                     loadEventList(data);
-                    notify("New event created");
+                    sendNotify("New event created");
                 });
             }
         });
