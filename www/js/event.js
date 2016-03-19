@@ -14,8 +14,8 @@ function validateEvent(event, callback) {
 
 function insertEvent(db, event, callback) {
     db.transaction(function (tx) {
-            tx.executeSql("INSERT INTO events(name, location, date, time, organizer) VALUES(?,?,?,?,?)",
-                [event.name, event.location, event.date, event.time, event.organizer],
+            tx.executeSql("INSERT INTO events(name, date, time, organizer, location, lat, lng) VALUES(?,?,?,?,?,?,?)",
+                [event.name, event.date, event.time, event.organizer, event.location, event.lat, event.lng],
                 callback(event),
                 onError
             );
@@ -39,8 +39,8 @@ function getEvent(db, id, callback) {
 
 function updateEvent(db, event, callback) {
     db.transaction(function (tx) {
-        tx.executeSql("UPDATE events SET name = ?, location = ?, date = ?, time = ?, organizer = ? WHERE id = ?",
-            [event.name, event.location, event.date, event.time, event.organizer, event.id],
+        tx.executeSql("UPDATE events SET name = ?, date = ?, time = ?, organizer = ?, location = ?, lat = ?, lng = ? WHERE id = ?",
+            [event.name, event.date, event.time, event.organizer, event.location, event.lat, event.lng, event.id],
             callback(event),
             onError
         );
@@ -56,10 +56,12 @@ function listEvent(db, callback) {
                     var row = results.rows.item(i);
                     var event = {
                         name: row.name,
-                        location: row['location'],
                         date: row['date'],
                         time: row['time'],
-                        organizer: row['organizer']
+                        organizer: row['organizer'],
+                        location: row['location'],
+                        lat: row['lat'],
+                        lng: row['lng']
                     };
                     events.push(row);
                 }

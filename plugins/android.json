@@ -9,6 +9,9 @@
     "installed_plugins": {
         "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "smt.md"
+        },
+        "cordova-plugin-geolocation": {
+            "PACKAGE_NAME": "smt.md"
         }
     },
     "dependent_plugins": {}

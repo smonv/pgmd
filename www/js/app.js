@@ -23,18 +23,19 @@ var $$ = Dom7;
 
 var mainView = app.addView('.view-main', {});
 
-var db = connect();
-if (!db) {
-    alert("CANNOT CONNECT DATABASE");
-}
-
-createTable(db);
+var conn = null;
+initDb(function (connection) {
+    conn = connection;
+    if (!conn) {
+        alert("CANNOT CONNECT DATABASE");
+    }
+});
 
 var data = {
     events: []
 };
 
-listEvent(db, function (events) {
+listEvent(conn, function (events) {
     data.events = data.events.concat(events);
     loadEventList(data);
 });
@@ -48,7 +49,7 @@ function loadEventList(context) {
 
         $$('div.card-header a').on('click', function (e) {
             var id = $$(this).attr('id');
-            getEvent(db, id, function (event) {
+            getEvent(conn, id, function (event) {
                 loadEventForm({action: 'Edit'}, event);
             });
         });
@@ -68,16 +69,58 @@ function loadEventForm(context, event) {
     });
 }
 
+function loadMap(context) {
+    $$.get('templates/event/map.html', function (d) {
+        var compiledTemplate = Template7.compile($$(d).html());
+        mainView.router.load({
+            template: compiledTemplate,
+            context: context
+        });
+
+    });
+}
+
 $$('a.event').click(function (e) {
     e.preventDefault();
     loadEventForm({action: "Add"}, null);
 });
 
+var mapdata;
+app.onPageInit('map', function () {
+    navigator.geolocation.getCurrentPosition(function (pos) {
+        var cpos = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude
+        };
 
-app.onPageInit('event-form', function () {
+        var options = {
+            center: cpos,
+            zoom: 16,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            disableDoubleClickZoom: true
+        };
+        initMap(options, function (d) {
+            mapdata = d;
+        });
+    });
+    $$('#map-done').on('click', function (e) {
+        e.preventDefault();
+        mainView.router.back();
+        $$('#event-location').val(mapdata.formatted_address);
+        $$('#event-lat').val(mapdata.geometry.location.lat());
+        $$('#event-lng').val(mapdata.geometry.location.lng());
+    });
+});
+
+
+app.onPageInit('event-form', function (page) {
     $$('div.list-block').removeClass('inputs-list');
     app.calendar({
         input: '#event-date'
+    });
+    $$('a#load-map').on('click', function (e) {
+        e.preventDefault();
+        loadMap();
     });
     $$('#save-event').on('click', function () {
         var event = app.formToJSON('#event-form');
@@ -90,14 +133,14 @@ app.onPageInit('event-form', function () {
             }
             else {
                 if (event.id == "") {
-                    insertEvent(db, event, function (d) {
+                    insertEvent(conn, event, function (d) {
                         data.events.push(d);
                         mainView.router.back();
                         loadEventList(data);
                         sendNotify("New event created");
                     });
                 } else {
-                    updateEvent(db, event, function (r) {
+                    updateEvent(conn, event, function (r) {
                         console.log(r);
                         data.events.forEach(function (v, k) {
                             if (v.id == r.id) {
