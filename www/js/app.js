@@ -19,8 +19,6 @@ function sendNotify(message) {
     });
 }
 
-var $$ = Dom7;
-
 var mainView = app.addView('.view-main', {});
 
 var conn = null;
@@ -41,7 +39,7 @@ var data = {
 function loadTemplate(template, context, callback) {
     $.get('templates/' + template + '.html')
         .success(function (result) {
-            var compiledTemplate = Template7.compile($$(result).html());
+            var compiledTemplate = Template7.compile($(result).html());
             var html = compiledTemplate(context);
             callback(html);
         })
@@ -124,9 +122,19 @@ listEvent(conn, function (events) {
 });
 
 app.onPageInit('index', function () {
-    $$('div.card-header a').on('click', function (e) {
+    $('a#event-add').click(function (e) {
         e.preventDefault();
-        var id = $$(this).attr('id');
+        data.action = 'Add';
+        loadEventForm(data, function (error) {
+            if (error) {
+                alert(error);
+            }
+        });
+    });
+    
+    $('div.card-header a').on('click', function (e) {
+        e.preventDefault();
+        var id = $(this).attr('id');
         data.action = 'Edit';
         getEvent(conn, id, function (event) {
             data.event = event;
@@ -142,21 +150,11 @@ app.onPageInit('index', function () {
     });
 });
 
-$$('a#event-add').click(function (e) {
-    e.preventDefault();
-    data.action = 'Add';
-    loadEventForm(data, function (error) {
-        if (error) {
-            alert(error);
-        }
-    });
-});
-
 app.onPageInit('map', function () {
     $('#map-done').on('click', function (e) {
+        e.preventDefault();
+        mainView.router.back();
         if (data.map) {
-            e.preventDefault();
-            mainView.router.back();
             $('#event-location').val(data.map.formatted_address);
             $('#event-lat').val(data.map.geometry.location.lat());
             $('#event-lng').val(data.map.geometry.location.lng());
@@ -166,15 +164,15 @@ app.onPageInit('map', function () {
 
 
 app.onPageInit('event-form', function () {
-    $$('div.list-block').removeClass('inputs-list');
+    $('div.list-block').removeClass('inputs-list');
     app.calendar({
         input: '#event-date'
     });
-    $$('a#load-map').on('click', function (e) {
+    $('a#load-map').on('click', function (e) {
         e.preventDefault();
         loadMap(data);
     });
-    $$('#save-event').on('click', function () {
+    $('#save-event').on('click', function () {
         var event = app.formToJSON('#event-form');
         validateEvent(event, function (err) {
             if (err.length > 0) {
@@ -198,7 +196,7 @@ app.onPageInit('event-form', function () {
                                 data.events[k] = r;
                             }
                         });
-                        mainView.router.back(function(){
+                        mainView.router.back(function () {
                             loadEventList(data, function (error) {
                                 if (!error) {
                                     sendNotify("Event Updated");
