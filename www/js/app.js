@@ -153,13 +153,13 @@ $$('a#event-add').click(function (e) {
 });
 
 app.onPageInit('map', function () {
-    $$('#map-done').on('click', function (e) {
+    $('#map-done').on('click', function (e) {
         if (data.map) {
             e.preventDefault();
             mainView.router.back();
-            $$('#event-location').val(data.map.formatted_address);
-            $$('#event-lat').val(data.map.geometry.location.lat());
-            $$('#event-lng').val(data.map.geometry.location.lng());
+            $('#event-location').val(data.map.formatted_address);
+            $('#event-lat').val(data.map.geometry.location.lat());
+            $('#event-lng').val(data.map.geometry.location.lng());
         }
     });
 });
