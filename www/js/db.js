@@ -14,7 +14,7 @@ function connect() {
 function createTable(db) {
     db.transaction(function (tx) {
         tx.executeSql("CREATE TABLE IF NOT EXISTS events(" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, name, date, time, organizer, location, lat, lng)");
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, date TEXT, time TEXT, organizer TEXT, location TEXT, lat REAL, lng REAL)");
     }, onError);
 }
 

@@ -6,6 +6,8 @@ function initMap(options, callback) {
     marker = new google.maps.Marker({
         map: map
     });
+    marker.setPosition(options.center);
+    marker.setVisible(true);
 
     // Create the search box and link it to the UI element.
     var input = document.getElementById('pac-input');

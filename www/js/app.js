@@ -32,95 +32,147 @@ initDb(function (connection) {
 });
 
 var data = {
-    events: []
+    events: [],
+    action: null,
+    event: null,
+    map: null
 };
 
-listEvent(conn, function (events) {
-    data.events = data.events.concat(events);
-    loadEventList(data);
-});
-
-function loadEventList(context) {
-    $$('div#event-list').remove();
-    $$.get('templates/event/list.html', function (d) {
-        var compiledTemplate = Template7.compile($$(d).html());
-        var html = compiledTemplate(context);
-        $$('.page-content').append(html);
-
-        $$('div.card-header a').on('click', function (e) {
-            var id = $$(this).attr('id');
-            getEvent(conn, id, function (event) {
-                loadEventForm({action: 'Edit'}, event);
-            });
+function loadTemplate(template, context, callback) {
+    $.get('templates/' + template + '.html')
+        .success(function (result) {
+            var compiledTemplate = Template7.compile($$(result).html());
+            var html = compiledTemplate(context);
+            callback(html);
+        })
+        .error(function () {
+            callback("");
         });
-    });
 }
 
-function loadEventForm(context, event) {
-    $$.get('templates/event/form.html', function (d) {
-        var compiledTemplate = Template7.compile($$(d).html());
-        mainView.router.load({
-            template: compiledTemplate,
-            context: context
-        });
-        if (event != null) {
-            app.formFromJSON('#event-form', event);
+function loadEventList(context, callback) {
+    loadTemplate('event/index', context, function (content) {
+        if (content == "") {
+            callback("Cannot load event list!");
+        } else {
+            mainView.router.loadContent(content);
+            callback(null);
         }
     });
 }
 
-function loadMap(context) {
-    $$.get('templates/event/map.html', function (d) {
-        var compiledTemplate = Template7.compile($$(d).html());
-        mainView.router.load({
-            template: compiledTemplate,
-            context: context
-        });
-
+function loadEventForm(context, callback) {
+    loadTemplate('event/form', context, function (content) {
+        if (content == "") {
+            callback("Cannot load event form!");
+        } else {
+            mainView.router.loadContent(content);
+            callback(null);
+        }
     });
 }
 
-$$('a.event').click(function (e) {
-    e.preventDefault();
-    loadEventForm({action: "Add"}, null);
+function loadMap(context, callback) {
+    loadTemplate('event/map', context, function (content) {
+        if (content == "") {
+            callback("Cannot load map!");
+        } else {
+            mainView.router.loadContent(content);
+            var cpos = {
+                lat: null,
+                lng: null
+            };
+
+            var options = {
+                center: null,
+                zoom: 16,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                disableDoubleClickZoom: true
+            };
+
+            if (data.event) {
+
+                cpos.lat = data.event.lat;
+                cpos.lng = data.event.lng;
+                options.center = cpos;
+
+                initMap(options, function (mapdata) {
+                    data.map = mapdata;
+                });
+            } else {
+                navigator.geolocation.getCurrentPosition(function (pos) {
+                    cpos.lat = pos.coords.latitude;
+                    cpos.lng = pos.coords.longitude;
+
+                    options.center = cpos;
+                    initMap(options, function (mapdata) {
+                        data.map = mapdata;
+                    });
+                });
+            }
+        }
+    });
+}
+
+listEvent(conn, function (events) {
+    data.events = data.events.concat(events);
+    loadEventList(data, function (error) {
+        if (error) {
+            alert(error);
+        }
+    });
 });
 
-var mapdata;
-app.onPageInit('map', function () {
-    navigator.geolocation.getCurrentPosition(function (pos) {
-        var cpos = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-        };
-
-        var options = {
-            center: cpos,
-            zoom: 16,
-            mapTypeId: google.maps.MapTypeId.ROADMAP,
-            disableDoubleClickZoom: true
-        };
-        initMap(options, function (d) {
-            mapdata = d;
+app.onPageInit('index', function () {
+    $$('div.card-header a').on('click', function (e) {
+        e.preventDefault();
+        var id = $$(this).attr('id');
+        data.action = 'Edit';
+        getEvent(conn, id, function (event) {
+            data.event = event;
+            loadEventForm(data, function (error) {
+                if (!error) {
+                    app.formFromJSON('#event-form', data.event);
+                } else {
+                    data.event = null;
+                    alert(error);
+                }
+            });
         });
     });
+});
+
+$$('a#event-add').click(function (e) {
+    e.preventDefault();
+    data.action = 'Add';
+    loadEventForm(data, function (error) {
+        if (error) {
+            alert(error);
+        }
+    });
+});
+
+app.onPageInit('map', function () {
     $$('#map-done').on('click', function (e) {
-        e.preventDefault();
-        mainView.router.back();
-        $$('#event-location').val(mapdata.formatted_address);
-        $$('#event-lat').val(mapdata.geometry.location.lat());
-        $$('#event-lng').val(mapdata.geometry.location.lng());
+        if (data.map) {
+            e.preventDefault();
+            mainView.router.back();
+            $$('#event-location').val(data.map.formatted_address);
+            $$('#event-lat').val(data.map.geometry.location.lat());
+            $$('#event-lng').val(data.map.geometry.location.lng());
+        }
     });
 });
 
 
-app.onPageInit('event-form', function (page) {
+app.onPageInit('event-form', function () {
     $$('div.list-block').removeClass('inputs-list');
     app.calendar({
         input: '#event-date'
     });
     $$('a#load-map').on('click', function (e) {
         e.preventDefault();
-        loadMap();
+        loadMap(data);
     });
     $$('#save-event').on('click', function () {
         var event = app.formToJSON('#event-form');
@@ -141,16 +193,22 @@ app.onPageInit('event-form', function (page) {
                     });
                 } else {
                     updateEvent(conn, event, function (r) {
-                        console.log(r);
                         data.events.forEach(function (v, k) {
                             if (v.id == r.id) {
                                 data.events[k] = r;
                             }
                         });
-                        mainView.router.back();
-                        loadEventList(data);
-                        sendNotify("Event Updated");
-                    })
+                        mainView.router.back(function(){
+                            loadEventList(data, function (error) {
+                                if (!error) {
+                                    sendNotify("Event Updated");
+                                    data.event = null;
+                                } else {
+                                    alert(error);
+                                }
+                            });
+                        });
+                    });
                 }
             }
         });

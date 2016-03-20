@@ -1,0 +1,40 @@
+<script type="text/template7" id="index">
+    <div class="page" data-page="index">
+        <div class="navbar">
+            <div class="navbar-inner">
+                <div class="left">
+                    <a href="#" class="open-panel link icon-only">
+                        <i class="fa fa-bars"></i>
+                    </a>
+                </div>
+                <div class="center">madDiscovery</div>
+                <div class="right">
+                    <a href="#" class="link icon-only" id="event-add">
+                        <i class="fa fa-plus"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="page-content">
+            <div class="content-block-title">Events</div>
+            <div id="event-list">
+                {{#each events reverse="true"}}
+                <div class="card">
+                    <div class="card-header">
+                        <a href="#" id="{{id}}">
+                            {{name}}
+                        </a>
+                    </div>
+
+                    <div class="card-content">
+                        <div class="card-content-inner">
+                            <p class="color-gray">{{date}} {{time}}</p>
+                            <p>{{location}}</p>
+                        </div>
+                    </div>
+                </div>
+                {{/each}}
+            </div>
+        </div>
+    </div>
+</script>
