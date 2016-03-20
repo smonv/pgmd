@@ -54,15 +54,6 @@ function listEvent(db, callback) {
                 var total = results.rows.length;
                 for (var i = 0; i < total; i++) {
                     var row = results.rows.item(i);
-                    var event = {
-                        name: row.name,
-                        date: row['date'],
-                        time: row['time'],
-                        organizer: row['organizer'],
-                        location: row['location'],
-                        lat: row['lat'],
-                        lng: row['lng']
-                    };
                     events.push(row);
                 }
                 callback(events);

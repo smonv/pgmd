@@ -1,7 +1,7 @@
 function initDb(callback) {
     var db = connect();
     if (db) {
-        dropTable(db);
+        //dropTable(db);
         createTable(db);
         callback(db);
     }
