@@ -59,6 +59,17 @@ function loadEventList(context, callback) {
     });
 }
 
+function reloadEventList(context, callback) {
+    loadTemplate('event/index', context, function (content) {
+        if (content == "") {
+            callback("Cannot load event list!");
+        } else {
+            mainView.router.reloadContent(content);
+            callback(null);
+        }
+    });
+}
+
 function loadEventForm(context, callback) {
     loadTemplate('event/form', context, function (content) {
         if (content == "") {
@@ -131,7 +142,7 @@ app.onPageInit('index', function () {
             }
         });
     });
-    
+
     $('div.card-header a').on('click', function (e) {
         e.preventDefault();
         var id = $(this).attr('id');
@@ -185,9 +196,15 @@ app.onPageInit('event-form', function () {
                 if (event.id == "") {
                     insertEvent(conn, event, function (d) {
                         data.events.push(d);
-                        mainView.router.back();
-                        loadEventList(data);
-                        sendNotify("New event created");
+                        
+                        reloadEventList(data, function (error) {
+                            if (!error) {
+                                sendNotify("New event created");
+                            } else {
+                                alert(error);
+                            }
+                        });
+
                     });
                 } else {
                     updateEvent(conn, event, function (r) {
@@ -196,15 +213,14 @@ app.onPageInit('event-form', function () {
                                 data.events[k] = r;
                             }
                         });
-                        mainView.router.back(function () {
-                            loadEventList(data, function (error) {
-                                if (!error) {
-                                    sendNotify("Event Updated");
-                                    data.event = null;
-                                } else {
-                                    alert(error);
-                                }
-                            });
+
+                        reloadEventList(data, function (error) {
+                            if (!error) {
+                                sendNotify("Event Updated");
+                                data.event = null;
+                            } else {
+                                alert(error);
+                            }
                         });
                     });
                 }
