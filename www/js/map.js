@@ -9,6 +9,10 @@ function initMap(options, callback) {
     marker.setPosition(options.center);
     marker.setVisible(true);
 
+    map.addListener('click', function (e) {
+       marker.setPosition(e.latLng);
+    });
+
     // Create the search box and link it to the UI element.
     var input = document.getElementById('pac-input');
     map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
