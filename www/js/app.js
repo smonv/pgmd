@@ -2,7 +2,7 @@ var app;
 var mainView;
 var data;
 
-function init(){
+function initApp() {
     app = new Framework7({
         material: true,
         cache: false,
@@ -34,22 +34,14 @@ function init(){
 
     listEvent(conn, function (events) {
         data.events = data.events.concat(events);
-        loadEventList(data, function (error) {
-            if (error) {
-                alert(error);
-            }
-        });
+        loadEventList(data, onError);
     });
 
     app.onPageInit('index', function () {
         $('a#event-add').click(function (e) {
             e.preventDefault();
             data.action = 'Add';
-            loadEventForm(data, function (error) {
-                if (error) {
-                    alert(error);
-                }
-            });
+            loadEventForm(data, onError);
         });
 
         $('div.card-header a').on('click', function (e) {
@@ -103,38 +95,48 @@ function init(){
                 }
                 else {
                     if (event.id == "") {
-                        insertEvent(conn, event, function (d) {
-                            data.events.push(d);
-
-                            reloadEventList(data, function (error) {
-                                if (!error) {
-                                    sendNotify("New event created");
-                                } else {
-                                    alert(error);
-                                }
-                            });
-                        });
+                        addNewEvent(conn, data, event);
                     } else {
-                        updateEvent(conn, event, function (r) {
-                            data.events.forEach(function (v, k) {
-                                if (v.id == r.id) {
-                                    data.events[k] = r;
-                                }
-                            });
-
-                            reloadEventList(data, function (error) {
-                                if (!error) {
-                                    sendNotify("Event Updated");
-                                    data.event = null;
-                                } else {
-                                    alert(error);
-                                }
-                            });
-                        });
+                        updateOldEvent(conn, data, event);
                     }
                 }
             });
 
+        });
+    });
+}
+
+function addNewEvent(conn, data, event){
+    insertEvent(conn, event, function (eid) {
+        getEvent(conn, eid, function (e) {
+            data.events.push(e);
+
+            reloadEventList(data, function (error) {
+                if (!error) {
+                    sendNotify("New event created");
+                } else {
+                    console.log(error);
+                }
+            });
+        });
+    });
+}
+
+function updateOldEvent(conn,data,event){
+    updateEvent(conn, event, function (r) {
+        data.events.forEach(function (v, k) {
+            if (v.id == r.id) {
+                data.events[k] = r;
+            }
+        });
+
+        reloadEventList(data, function (error) {
+            if (!error) {
+                sendNotify("Event Updated");
+                data.event = null;
+            } else {
+                console.log(error);
+            }
         });
     });
 }

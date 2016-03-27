@@ -12,11 +12,13 @@ function validateEvent(event, callback) {
     callback(err);
 }
 
-function insertEvent(db, event, callback) {
-    db.transaction(function (tx) {
+function insertEvent(conn, event, callback) {
+    conn.transaction(function (tx) {
             tx.executeSql("INSERT INTO events(name, date, time, organizer, location, lat, lng) VALUES(?,?,?,?,?,?,?)",
                 [event.name, event.date, event.time, event.organizer, event.location, event.lat, event.lng],
-                callback(event),
+                function(tx, results){
+                    callback(results.insertId)
+                },
                 onError
             );
         },
@@ -24,8 +26,8 @@ function insertEvent(db, event, callback) {
     );
 }
 
-function getEvent(db, id, callback) {
-    db.transaction(function (tx) {
+function getEvent(conn, id, callback) {
+    conn.transaction(function (tx) {
             tx.executeSql("SELECT * FROM events WHERE id = ?",
                 [id],
                 function (tx, results) {
@@ -37,8 +39,8 @@ function getEvent(db, id, callback) {
     );
 }
 
-function updateEvent(db, event, callback) {
-    db.transaction(function (tx) {
+function updateEvent(conn, event, callback) {
+    conn.transaction(function (tx) {
         tx.executeSql("UPDATE events SET name = ?, date = ?, time = ?, organizer = ?, location = ?, lat = ?, lng = ? WHERE id = ?",
             [event.name, event.date, event.time, event.organizer, event.location, event.lat, event.lng, event.id],
             callback(event),
@@ -47,8 +49,8 @@ function updateEvent(db, event, callback) {
     });
 }
 
-function listEvent(db, callback) {
-    db.transaction(function (tx) {
+function listEvent(conn, callback) {
+    conn.transaction(function (tx) {
             tx.executeSql("SELECT * FROM events", [], function (tx, results) {
                 var events = [];
                 var total = results.rows.length;
@@ -61,8 +63,4 @@ function listEvent(db, callback) {
         },
         onError
     );
-}
-
-function onError(err) {
-    console.log("ERROR: " + err.message);
 }
