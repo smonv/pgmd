@@ -49,22 +49,16 @@ function initApp() {
             e.preventDefault();
             var id = $(this).attr('id');
             data.action = 'Edit';
+
             getEvent(conn, id, function (event) {
                 data.event = event;
-                loadEventForm(data, function (error) {
-                    if (!error) {
-                        app.formFromJSON('#event-form', data.event);
-                    } else {
-                        data.event = null;
-                        alert(error);
-                    }
-                });
+                loadEventDetail(data, onError);
             });
         });
     });
 
     app.onPageInit('map', function () {
-        
+
 
         var options = {
             center: null,
@@ -136,6 +130,20 @@ function initApp() {
                 }
             });
 
+        });
+    });
+
+    app.onPageInit('event-detail', function () {
+        $('div.list-block').removeClass('inputs-list');
+        $('a#event-edit').on('click', function (e) {
+            e.preventDefault();
+            loadEventForm(data, function (err) {
+                if (err) {
+                    console.log(err);
+                } else {
+                    app.formFromJSON('#event-form', data.event);
+                }
+            });
         });
     });
 }
@@ -232,6 +240,22 @@ function loadEventForm(context, callback) {
     });
 }
 
+function loadEventDetail(context, callback) {
+    console.log('here');
+    loadTemplate('event/detail', context, function (content) {
+        console.log(content);
+        if (content == '') {
+            var err = {
+                code: 'led',
+                message: "loadEventDetail: content empty"
+            };
+            callback(err)
+        } else {
+            mainView.router.loadContent(content);
+            callback(null)
+        }
+    });
+}
 function loadMap(context, callback) {
     loadTemplate('event/map', context, function (content) {
         if (content == '') {
