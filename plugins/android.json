@@ -12,6 +12,12 @@
         },
         "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "smt.md"
+        },
+        "cordova-plugin-device-motion": {
+            "PACKAGE_NAME": "smt.md"
+        },
+        "cordova-plugin-device-orientation": {
+            "PACKAGE_NAME": "smt.md"
         }
     },
     "dependent_plugins": {}

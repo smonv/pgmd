@@ -4,8 +4,8 @@
     <description>
         Hello World sample application that responds to the deviceready event.
     </description>
-    <author email="support@phonegap.com" href="http://phonegap.com">
-        PhoneGap Team
+    <author email="thanhvtgc00556@fpt.edu.vn" href="https://tthanh.github.io">
+        Tien Thanh
     </author>
     <content src="index.html" />
     <preference name="permissions" value="none" />
@@ -80,7 +80,9 @@
         <allow-intent href="itms:*" />
         <allow-intent href="itms-apps:*" />
     </platform>
+    <engine name="android" spec="~5.1.1" />
     <plugin name="cordova-plugin-whitelist" spec="~1.2.1" />
     <plugin name="cordova-plugin-geolocation" spec="~2.1.0" />
-    <engine name="android" spec="~5.1.1" />
+    <plugin name="cordova-plugin-device-motion" spec="~1.2.0" />
+    <plugin name="cordova-plugin-device-orientation" spec="~1.0.2" />
 </widget>
