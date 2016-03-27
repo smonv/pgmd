@@ -10,13 +10,16 @@
         "cordova-plugin-whitelist": {
             "PACKAGE_NAME": "smt.md"
         },
-        "cordova-plugin-geolocation": {
-            "PACKAGE_NAME": "smt.md"
-        },
         "cordova-plugin-device-motion": {
             "PACKAGE_NAME": "smt.md"
         },
         "cordova-plugin-device-orientation": {
+            "PACKAGE_NAME": "smt.md"
+        },
+        "cordova-plugin-dialogs": {
+            "PACKAGE_NAME": "smt.md"
+        },
+        "cordova-plugin-geolocation": {
             "PACKAGE_NAME": "smt.md"
         }
     },

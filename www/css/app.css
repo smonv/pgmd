@@ -41,7 +41,7 @@
 
 .pac-container {
     font-family: Roboto;
-    z-index: 10000 !important;
+    z-index: 20000 !important;
 }
 
 #type-selector {

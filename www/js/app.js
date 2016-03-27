@@ -8,6 +8,7 @@ function initApp() {
         cache: false,
         modalTitle: 'madDiscovery',
         precompileTemplates: true,
+        fastClicks: false,
         onAjaxStart: function () {
             app.showIndicator();
         },
@@ -63,6 +64,25 @@ function initApp() {
     });
 
     app.onPageInit('map', function () {
+        
+
+        var options = {
+            center: null,
+            zoom: 16,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            disableDoubleClickZoom: true
+        };
+
+        options.center = {
+            lat: data.event.lat,
+            lng: data.event.lng
+        };
+
+        initMap(options, function (mapdata) {
+            data.map = mapdata;
+        });
+
+
         $('#map-done').on('click', function (e) {
             e.preventDefault();
             mainView.router.back();
@@ -80,10 +100,25 @@ function initApp() {
         app.calendar({
             input: '#event-date'
         });
+
         $('a#load-map').on('click', function (e) {
             e.preventDefault();
-            loadMap(data);
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                data.event = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                };
+
+                if (data.event) {
+                    loadMap(data, onError);
+                }
+
+            }, function (err) {
+                sendAlert('Please enable Location to use map.', null);
+                console.log(err);
+            }, {maximumAge: 0, timeout: 10000, enableHighAccuracy: true});
         });
+
         $('#save-event').on('click', function () {
             var event = app.formToJSON('#event-form');
             validateEvent(event, function (err) {
@@ -91,7 +126,6 @@ function initApp() {
                     err.forEach(function (value) {
                         sendNotify(value);
                     });
-
                 }
                 else {
                     if (event.id == "") {
@@ -106,7 +140,7 @@ function initApp() {
     });
 }
 
-function addNewEvent(conn, data, event){
+function addNewEvent(conn, data, event) {
     insertEvent(conn, event, function (eid) {
         getEvent(conn, eid, function (e) {
             data.events.push(e);
@@ -115,14 +149,14 @@ function addNewEvent(conn, data, event){
                 if (!error) {
                     sendNotify("New event created");
                 } else {
-                    console.log(error);
+                    console.log("addNewEvent" + error);
                 }
             });
         });
     });
 }
 
-function updateOldEvent(conn,data,event){
+function updateOldEvent(conn, data, event) {
     updateEvent(conn, event, function (r) {
         data.events.forEach(function (v, k) {
             if (v.id == r.id) {
@@ -135,10 +169,14 @@ function updateOldEvent(conn,data,event){
                 sendNotify("Event Updated");
                 data.event = null;
             } else {
-                console.log(error);
+                console.log("updateOldEvent" + error);
             }
         });
     });
+}
+
+function sendAlert(message, callback) {
+    navigator.notification.alert(message, callback, 'Alert', 'Dismiss');
 }
 
 function sendNotify(message) {
@@ -200,38 +238,7 @@ function loadMap(context, callback) {
             callback("Cannot load map!");
         } else {
             mainView.router.loadContent(content);
-            var cpos = {
-                lat: null,
-                lng: null
-            };
-
-            var options = {
-                center: null,
-                zoom: 16,
-                mapTypeId: google.maps.MapTypeId.ROADMAP,
-                disableDoubleClickZoom: true
-            };
-
-            if (data.event) {
-
-                cpos.lat = data.event.lat;
-                cpos.lng = data.event.lng;
-                options.center = cpos;
-
-                initMap(options, function (mapdata) {
-                    data.map = mapdata;
-                });
-            } else {
-                navigator.geolocation.getCurrentPosition(function (pos) {
-                    cpos.lat = pos.coords.latitude;
-                    cpos.lng = pos.coords.longitude;
-
-                    options.center = cpos;
-                    initMap(options, function (mapdata) {
-                        data.map = mapdata;
-                    });
-                });
-            }
+            callback(null);
         }
     });
 }
