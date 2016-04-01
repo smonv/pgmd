@@ -21,6 +21,12 @@
         },
         "cordova-plugin-geolocation": {
             "PACKAGE_NAME": "smt.md"
+        },
+        "cordova-plugin-camera": {
+            "PACKAGE_NAME": "smt.md"
+        },
+        "cordova-plugin-file": {
+            "PACKAGE_NAME": "smt.md"
         }
     },
     "dependent_plugins": {}

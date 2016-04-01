@@ -8,7 +8,7 @@
     <meta name="viewport"
           content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi"/>
     <!--<meta http-equiv="Content-Security-Policy"
-          content="default-src *; script-src 'self' 'unsafe-inline' 'unsafe-eval' *; style-src 'self' 'unsafe-inline' *">-->
+          content="default-src *; script-src 'self' 'unsafe-inline' 'unsafe-eval' *; style-src 'self' 'unsafe-inline' *; img-src *">-->
     <link rel="stylesheet" type="text/css" href="css/framework7.material.min.css"/>
     <link rel="stylesheet" type="text/css" href="css/framework7.material.colors.min.css"/>
     <link rel="stylesheet" type="text/css" href="css/font-awesome.min.css"/>
@@ -72,12 +72,8 @@
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDYZFZzszMl3LXgCEsa16ocpEMhNvgfxS4&libraries=places"></script>
 <script type="text/javascript">
 
-
     document.addEventListener("deviceready", onDeviceReady, false);
-    function onDeviceReady() {
-        console.log("app starting...");
-        initApp();
-    }
+
 </script>
 </body>
 </html>

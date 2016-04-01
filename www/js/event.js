@@ -16,7 +16,7 @@ function insertEvent(conn, event, callback) {
     conn.transaction(function (tx) {
             tx.executeSql("INSERT INTO events(name, date, time, organizer, location, lat, lng) VALUES(?,?,?,?,?,?,?)",
                 [event.name, event.date, event.time, event.organizer, event.location, event.lat, event.lng],
-                function(tx, results){
+                function (tx, results) {
                     callback(results.insertId)
                 },
                 onError
@@ -28,15 +28,13 @@ function insertEvent(conn, event, callback) {
 
 function getEvent(conn, id, callback) {
     conn.transaction(function (tx) {
-            tx.executeSql("SELECT * FROM events WHERE id = ?",
-                [id],
-                function (tx, results) {
-                    callback(results.rows.item(0));
-                },
-                onError
-            );
-        }, onError
-    );
+        tx.executeSql("SELECT * FROM events WHERE id = ?",
+            [id],
+            function (tx, results) {
+                callback(results.rows.item(0));
+            },
+            onError);
+    }, onError);
 }
 
 function updateEvent(conn, event, callback) {
@@ -51,16 +49,47 @@ function updateEvent(conn, event, callback) {
 
 function listEvent(conn, callback) {
     conn.transaction(function (tx) {
-            tx.executeSql("SELECT * FROM events", [], function (tx, results) {
-                var events = [];
+        tx.executeSql("SELECT * FROM events", [], function (tx, results) {
+            var events = [];
+            var total = results.rows.length;
+            for (var i = 0; i < total; i++) {
+                var row = results.rows.item(i);
+                events.push(row);
+            }
+            callback(events);
+        }, onError);
+    }, onError);
+}
+
+function insertImage(conn, image, callback) {
+    conn.transaction(function (tx) {
+        tx.executeSql("INSERT INTO images(name, path, eid) VALUES (?,?,?)",
+            [image.name, image.path, image.eid], function (tx, results) {
+                callback(image);
+            }, onError);
+    }, onError);
+}
+
+function selectImageByEvent(conn, eid, callback) {
+    conn.transaction(function (tx) {
+        tx.executeSql("SELECT * FROM images WHERE eid = ?",
+            [eid],
+            function (tx, results) {
+                console.log(results);
+                var images = [];
                 var total = results.rows.length;
                 for (var i = 0; i < total; i++) {
-                    var row = results.rows.item(i);
-                    events.push(row);
+                    images.push(results.rows.item(i));
                 }
-                callback(events);
+                callback(images);
             }, onError);
-        },
-        onError
-    );
+    }, onError);
+}
+
+function deleteImage(conn, id, callback){
+    conn.transaction(function(tx){
+       tx.executeSql("DELETE FROM images WHERE id = ?", [id], function(tx, results){
+           callback('success');
+       }, onError);
+    });
 }

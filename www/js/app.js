@@ -1,6 +1,16 @@
 var app;
 var mainView;
 var data;
+var fs;
+
+function onDeviceReady() {
+    console.log("app starting...");
+    initApp();
+
+    window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (filesystem) {
+        fs = filesystem;
+    }, onError);
+}
 
 function initApp() {
     app = new Framework7({
@@ -145,7 +155,124 @@ function initApp() {
                 }
             });
         });
+
+        selectImageByEvent(conn, data.event.id, function (images) {
+            data.event.images = images;
+            loadEventGallery({images: data.event.images}, function (content) {
+                $('div#gallery').empty().append(content);
+            });
+        }, onError);
+
+
+        $('a#choose').on('click', function () {
+            getPhoto(Camera.PictureSourceType.PHOTOLIBRARY, function (image) {
+                window.resolveLocalFileSystemURL(image, function (entry) {
+                    copyImage(entry, function (i) {
+                        insertImage(conn, i, function () {
+                            selectImageByEvent(conn, data.event.id, function (images) {
+                                data.event.images = images;
+                                loadEventGallery({images: data.event.images}, function (content) {
+                                    $('div#gallery').empty().append(content);
+                                });
+                            }, onError);
+                        }, onError);
+                    }, onError);
+                }, onError);
+            });
+        });
+
+        $('a#take').on('click', function () {
+            getPhoto(Camera.PictureSourceType.CAMERA, function (image) {
+                window.resolveLocalFileSystemURL(image, function (entry) {
+                    copyImage(entry, function (i) {
+                        insertImage(conn, i, function () {
+                            selectImageByEvent(conn, data.event.id, function (images) {
+                                data.event.images = images;
+                                loadEventGallery({images: data.event.images}, function (content) {
+                                    $('div#gallery').empty().append(content);
+                                });
+                            }, onError);
+                        }, onError);
+                    }, onError);
+                }, onError);
+            });
+        });
+
+        $(document).on('click', 'img.event-img', function (e) {
+            e.preventDefault();
+            var id = $(this).attr('id');
+            $.each(data.event.images, function (i, v) {
+                if (v.id == id) {
+                    data.image = v;
+                }
+            });
+            if (data.image) {
+                loadEventImage(data.image, null, onError);
+            }
+        });
     });
+
+    app.onPageInit('image', function(){
+        $('a#img-remove').on('click', function(e){
+            e.preventDefault();
+            navigator.notification.confirm(
+                'Are you sure to remove this image?',
+                function(buttonIndex){
+                    if(buttonIndex == 1){
+                        console.log(data.image);
+                        removeImage(data.image.path, function(result){
+                            if(result == 'success'){
+                                deleteImage(conn, data.image.id, function(r){
+                                    if(r == 'success'){
+                                        mainView.router.back();
+                                        selectImageByEvent(conn, data.event.id, function (images) {
+                                            data.event.images = images;
+                                            loadEventGallery({images: data.event.images}, function (content) {
+                                                $('div#gallery').empty().append(content);
+                                            });
+                                        }, onError);
+                                        sendNotify(data.image.name + ' removed.');
+                                        data.image = null;
+                                    }
+                                });
+                            } 
+                        });
+
+                    }
+                },
+                'Remove image',
+                ['Remove', 'Cancle']
+            );
+        });
+    });
+}
+
+function copyImage(fileEntry, callback) {
+    var d = new Date();
+    var n = d.getTime();
+    var newFilename = n + ".jpg";
+    var image = {
+        name: newFilename,
+        eid: data.event.id
+    };
+    fs.root.getDirectory("images", {
+        create: true,
+        exclusive: false
+    }, function (dir) {
+        fileEntry.copyTo(dir, newFilename, function (result) {
+            image.path = result.nativeURL;
+            callback(image)
+        }, onError)
+    });
+}
+
+function removeImage(path, callback){
+    window.resolveLocalFileSystemURL(path, function(fileEntry){
+        console.log(fileEntry);
+        fileEntry.remove(function(){
+           callback('success');
+        }, onError);
+    }, onError);
 }
 
 function addNewEvent(conn, data, event) {
@@ -241,21 +368,16 @@ function loadEventForm(context, callback) {
 }
 
 function loadEventDetail(context, callback) {
-    console.log('here');
     loadTemplate('event/detail', context, function (content) {
-        console.log(content);
         if (content == '') {
-            var err = {
-                code: 'led',
-                message: "loadEventDetail: content empty"
-            };
-            callback(err)
+            callback(newError('template', 'loadEventDetail: content empty'));
         } else {
             mainView.router.loadContent(content);
-            callback(null)
+            callback(null);
         }
     });
 }
+
 function loadMap(context, callback) {
     loadTemplate('event/map', context, function (content) {
         if (content == '') {
@@ -265,4 +387,42 @@ function loadMap(context, callback) {
             callback(null);
         }
     });
+}
+
+function loadEventGallery(context, callback) {
+    loadTemplate('event/gallery', context, function (content) {
+        if (content == '') {
+            callback("Cannot load gallery!");
+        } else {
+            callback(content);
+        }
+    });
+}
+
+function loadEventImage(context, callback) {
+    loadTemplate('event/image', context, function (content) {
+        if (content == '') {
+            callback(content, newError('template', 'loadEventImage: content empty'))
+        } else {
+            mainView.router.loadContent(content);
+            callback(null, null);
+        }
+    });
+}
+
+function getPhoto(source, callback) {
+    navigator.camera.getPicture(callback, onError, {
+        quality: 100,
+        sourceType: source,
+        destinationType: Camera.DestinationType.FILE_URI,
+        allowEdit: true,
+        encodingType: Camera.EncodingType.JPEG
+    });
+}
+
+function newError(code, message) {
+    return {
+        code: code,
+        message: message
+    };
 }
