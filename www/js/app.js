@@ -125,7 +125,7 @@ function startApp() {
 
         $('#map-done').on('click', function (e) {
             e.preventDefault();
-            mainView.router.back();
+            backContent();
             if (global.map) {
                 $('#event-location').val(global.map.formatted_address);
                 $('#event-lat').val(global.map.geometry.location.lat());
@@ -224,7 +224,7 @@ function onSuccessRemoveImage(result) {
 }
 function onSuccessDeleteImage(result) {
     if (result == 'success') {
-        mainView.router.back();
+        backContent();
         selectImageByEvent(global.conn, global.event.id, onSuccessSelectImage);
         sendNotify(global.image.name + ' removed.');
         global.image = null;
