@@ -1,6 +1,6 @@
 var app;
 var mainView;
-var data;
+var global = {};
 var fs;
 
 function onDeviceReady() {
@@ -28,79 +28,40 @@ function initApp() {
     });
 
     mainView = app.addView('.view-main', {});
-    var conn = null;
+
     initDb(function (connection) {
-        conn = connection;
-        if (!conn) {
-            alert("CANNOT CONNECT DATABASE");
+        if (!connection) {
+            console.log("CANNOT CONNECT DATABASE");
+        } else {
+            global.conn = connection;
+            startApp();
         }
     });
+}
 
-    data = {
-        events: [],
-        action: null,
-        event: null,
-        map: null
-    };
+function startApp() {
 
-    listEvent(conn, function (events) {
-        data.events = data.events.concat(events);
-        loadEventList(data, onError);
-    });
+    listEvent(global.conn, onSuccessListEvent);
 
     app.onPageInit('index', function () {
-        $('a#event-add').click(function (e) {
+        $('a#event-add').on('click', function (e) {
             e.preventDefault();
-            data.action = 'Add';
-            loadEventForm(data, onError);
+            global.action = 'Add';
+            loadEventForm(global, loadContent);
         });
 
         $('div.card-header a').on('click', function (e) {
             e.preventDefault();
             var id = $(this).attr('id');
-            data.action = 'Edit';
+            global.action = 'Edit';
 
-            getEvent(conn, id, function (event) {
-                data.event = event;
-                loadEventDetail(data, onError);
-            });
+            getEvent(global.conn, id, onSuccessGetEvent);
         });
     });
-
-    app.onPageInit('map', function () {
-
-
-        var options = {
-            center: null,
-            zoom: 16,
-            mapTypeId: google.maps.MapTypeId.ROADMAP,
-            disableDoubleClickZoom: true
-        };
-
-        options.center = {
-            lat: data.event.lat,
-            lng: data.event.lng
-        };
-
-        initMap(options, function (mapdata) {
-            data.map = mapdata;
-        });
-
-
-        $('#map-done').on('click', function (e) {
-            e.preventDefault();
-            mainView.router.back();
-            if (data.map) {
-                $('#event-location').val(data.map.formatted_address);
-                $('#event-lat').val(data.map.geometry.location.lat());
-                $('#event-lng').val(data.map.geometry.location.lng());
-            }
-        });
-    });
-
 
     app.onPageInit('event-form', function () {
         $('div.list-block').removeClass('inputs-list');
+
         app.calendar({
             input: '#event-date'
         });
@@ -108,17 +69,17 @@ function initApp() {
         $('a#load-map').on('click', function (e) {
             e.preventDefault();
             navigator.geolocation.getCurrentPosition(function (pos) {
-                data.event = {
+                global.event = {
                     lat: pos.coords.latitude,
                     lng: pos.coords.longitude
                 };
 
-                if (data.event) {
-                    loadMap(data, onError);
+                if (global.event) {
+                    loadMap(global, loadContent);
                 }
 
             }, function (err) {
-                sendAlert('Please enable Location to use map.', null);
+                sendDialogAlert('Please enable Location to use map.', null);
                 console.log(err);
             }, {maximumAge: 0, timeout: 10000, enableHighAccuracy: true});
         });
@@ -133,13 +94,43 @@ function initApp() {
                 }
                 else {
                     if (event.id == "") {
-                        addNewEvent(conn, data, event);
+                        addNewEvent(event);
                     } else {
-                        updateOldEvent(conn, data, event);
+                        updateOldEvent(event);
                     }
                 }
             });
 
+        });
+    });
+
+    app.onPageInit('map', function () {
+
+        var options = {
+            center: null,
+            zoom: 16,
+            mapTypeId: google.maps.MapTypeId.ROADMAP,
+            disableDoubleClickZoom: true
+        };
+
+        options.center = {
+            lat: global.event.lat,
+            lng: global.event.lng
+        };
+
+        initMap(options, function (mapdata) {
+            global.map = mapdata;
+        });
+
+
+        $('#map-done').on('click', function (e) {
+            e.preventDefault();
+            mainView.router.back();
+            if (global.map) {
+                $('#event-location').val(global.map.formatted_address);
+                $('#event-lat').val(global.map.geometry.location.lat());
+                $('#event-lng').val(global.map.geometry.location.lng());
+            }
         });
     });
 
@@ -147,115 +138,108 @@ function initApp() {
         $('div.list-block').removeClass('inputs-list');
         $('a#event-edit').on('click', function (e) {
             e.preventDefault();
-            loadEventForm(data, function (err) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    app.formFromJSON('#event-form', data.event);
+            loadEventForm(global, function (content) {
+                if (content != null) {
+                    mainView.router.loadContent(content);
+                    app.formFromJSON('#event-form', global.event);
                 }
             });
         });
 
-        selectImageByEvent(conn, data.event.id, function (images) {
-            data.event.images = images;
-            loadEventGallery({images: data.event.images}, function (content) {
-                $('div#gallery').empty().append(content);
-            });
-        }, onError);
+        selectImageByEvent(global.conn, global.event.id, onSuccessSelectImage);
 
 
         $('a#choose').on('click', function () {
-            getPhoto(Camera.PictureSourceType.PHOTOLIBRARY, function (image) {
-                window.resolveLocalFileSystemURL(image, function (entry) {
-                    copyImage(entry, function (i) {
-                        insertImage(conn, i, function () {
-                            selectImageByEvent(conn, data.event.id, function (images) {
-                                data.event.images = images;
-                                loadEventGallery({images: data.event.images}, function (content) {
-                                    $('div#gallery').empty().append(content);
-                                });
-                            }, onError);
-                        }, onError);
-                    }, onError);
-                }, onError);
-            });
+            getPhoto(Camera.PictureSourceType.PHOTOLIBRARY, onSuccessGetPhoto);
         });
 
         $('a#take').on('click', function () {
-            getPhoto(Camera.PictureSourceType.CAMERA, function (image) {
-                window.resolveLocalFileSystemURL(image, function (entry) {
-                    copyImage(entry, function (i) {
-                        insertImage(conn, i, function () {
-                            selectImageByEvent(conn, data.event.id, function (images) {
-                                data.event.images = images;
-                                loadEventGallery({images: data.event.images}, function (content) {
-                                    $('div#gallery').empty().append(content);
-                                });
-                            }, onError);
-                        }, onError);
-                    }, onError);
-                }, onError);
-            });
+            getPhoto(Camera.PictureSourceType.CAMERA, onSuccessGetPhoto);
         });
 
         $(document).on('click', 'img.event-img', function (e) {
             e.preventDefault();
             var id = $(this).attr('id');
-            $.each(data.event.images, function (i, v) {
+            $.each(global.event.images, function (i, v) {
                 if (v.id == id) {
-                    data.image = v;
+                    global.image = v;
                 }
             });
-            if (data.image) {
-                loadEventImage(data.image, null, onError);
+            if (global.image) {
+                loadEventImage(global.image, loadContent);
             }
         });
     });
 
-    app.onPageInit('image', function(){
-        $('a#img-remove').on('click', function(e){
+    app.onPageInit('image', function () {
+        $('a#img-remove').on('click', function (e) {
             e.preventDefault();
-            navigator.notification.confirm(
-                'Are you sure to remove this image?',
-                function(buttonIndex){
-                    if(buttonIndex == 1){
-                        console.log(data.image);
-                        removeImage(data.image.path, function(result){
-                            if(result == 'success'){
-                                deleteImage(conn, data.image.id, function(r){
-                                    if(r == 'success'){
-                                        mainView.router.back();
-                                        selectImageByEvent(conn, data.event.id, function (images) {
-                                            data.event.images = images;
-                                            loadEventGallery({images: data.event.images}, function (content) {
-                                                $('div#gallery').empty().append(content);
-                                            });
-                                        }, onError);
-                                        sendNotify(data.image.name + ' removed.');
-                                        data.image = null;
-                                    }
-                                });
-                            } 
-                        });
-
-                    }
-                },
-                'Remove image',
-                ['Remove', 'Cancle']
-            );
+            sendDialogConfirm('Remove Image', 'Are you sure to remove this image?', ['Remove', 'Cancle'], onRemoveImage);
         });
     });
+}
+
+function onSuccessListEvent(events) {
+    global.events = events;
+    loadEventIndex(global, loadContent);
+}
+
+function onSuccessGetEvent(event) {
+    global.event = event;
+    loadEventDetail(global, loadContent);
+}
+
+function onSuccessSelectImage(images) {
+    global.event.images = images;
+    loadEventGallery({images: images}, function (content) {
+        $('div#gallery').empty().append(content);
+    });
+}
+
+function onSuccessGetPhoto(image) {
+    window.resolveLocalFileSystemURL(image, onSuccessResolveLocalFS, onError);
+}
+
+function onSuccessResolveLocalFS(entry) {
+    copyImage(entry, onSuccessCopyImage, onError);
+}
+
+function onSuccessCopyImage(image) {
+    insertImage(global.conn, image, onSuccessInsertImage, onError);
+}
+
+function onSuccessInsertImage() {
+    selectImageByEvent(global.conn, global.event.id, onSuccessSelectImage, onError);
+}
+
+function onRemoveImage(buttonIndex) {
+    if (buttonIndex == 1) {
+        removeImage(global.image.path, onSuccessRemoveImage);
+    }
+}
+function onSuccessRemoveImage(result) {
+    if (result == 'success') {
+        deleteImage(global.conn, global.image.id, onSuccessDeleteImage);
+    }
+}
+function onSuccessDeleteImage(result) {
+    if (result == 'success') {
+        mainView.router.back();
+        selectImageByEvent(global.conn, global.event.id, onSuccessSelectImage);
+        sendNotify(global.image.name + ' removed.');
+        global.image = null;
+    }
 }
 
 function copyImage(fileEntry, callback) {
     var d = new Date();
     var n = d.getTime();
-    var newFilename = n + ".jpg";
+    var newFilename = n + '.jpg';
     var image = {
         name: newFilename,
-        eid: data.event.id
+        eid: global.event.id
     };
-    fs.root.getDirectory("images", {
+    fs.root.getDirectory('images', {
         create: true,
         exclusive: false
     }, function (dir) {
@@ -263,63 +247,44 @@ function copyImage(fileEntry, callback) {
             image.path = result.nativeURL;
             callback(image)
         }, onError)
-    });
+    }, onError);
 }
 
-function removeImage(path, callback){
-    window.resolveLocalFileSystemURL(path, function(fileEntry){
+function removeImage(path, callback) {
+    window.resolveLocalFileSystemURL(path, function (fileEntry) {
         console.log(fileEntry);
-        fileEntry.remove(function(){
-           callback('success');
+        fileEntry.remove(function () {
+            callback('success');
         }, onError);
     }, onError);
 }
 
-function addNewEvent(conn, data, event) {
-    insertEvent(conn, event, function (eid) {
-        getEvent(conn, eid, function (e) {
-            data.events.push(e);
+function onSuccessInsertEvent(event){
+    global.events.push(event);
+    reloadEventList(global, reloadContent);
+    sendNotify("New event created");
+}
 
-            reloadEventList(data, function (error) {
-                if (!error) {
-                    sendNotify("New event created");
-                } else {
-                    console.log("addNewEvent" + error);
-                }
-            });
-        });
+function addNewEvent(event) {
+    insertEvent(global.conn, event, onSuccessInsertEvent);
+}
+
+function onSuccessUpdateEvent(event) {
+    global.events.forEach(function (v, k) {
+        if (v.id == event.id) {
+            global.events[k] = event;
+        }
+    });
+
+    reloadEventList(global, function (content) {
+        reloadContent(content);
+        sendNotify("Event Updated");
+        global.event = null;
     });
 }
 
-function updateOldEvent(conn, data, event) {
-    updateEvent(conn, event, function (r) {
-        data.events.forEach(function (v, k) {
-            if (v.id == r.id) {
-                data.events[k] = r;
-            }
-        });
-
-        reloadEventList(data, function (error) {
-            if (!error) {
-                sendNotify("Event Updated");
-                data.event = null;
-            } else {
-                console.log("updateOldEvent" + error);
-            }
-        });
-    });
-}
-
-function sendAlert(message, callback) {
-    navigator.notification.alert(message, callback, 'Alert', 'Dismiss');
-}
-
-function sendNotify(message) {
-    app.addNotification({
-        hold: 3000,
-        closeOnClick: true,
-        message: message
-    });
+function updateOldEvent(event) {
+    updateEvent(global.conn, event, onSuccessUpdateEvent);
 }
 
 function loadTemplate(template, context, callback) {
@@ -330,83 +295,49 @@ function loadTemplate(template, context, callback) {
             callback(html);
         })
         .error(function () {
-            callback("");
+            callback('');
         });
 }
 
-function loadEventList(context, callback) {
+function loadEventIndex(context, callback) {
     loadTemplate('event/index', context, function (content) {
-        if (content == '') {
-            callback("Cannot load event list!");
-        } else {
-            mainView.router.loadContent(content);
-            callback(null);
-        }
+        callback(content);
     });
 }
 
 function reloadEventList(context, callback) {
     loadTemplate('event/index', context, function (content) {
-        if (content == '') {
-            callback("Cannot load event list!");
-        } else {
-            mainView.router.reloadContent(content);
-            callback(null);
-        }
+        callback(content);
     });
 }
 
 function loadEventForm(context, callback) {
     loadTemplate('event/form', context, function (content) {
-        if (content == '') {
-            callback("Cannot load event form!");
-        } else {
-            mainView.router.loadContent(content);
-            callback(null);
-        }
+        callback(content);
     });
 }
 
 function loadEventDetail(context, callback) {
     loadTemplate('event/detail', context, function (content) {
-        if (content == '') {
-            callback(newError('template', 'loadEventDetail: content empty'));
-        } else {
-            mainView.router.loadContent(content);
-            callback(null);
-        }
+        callback(content);
     });
 }
 
 function loadMap(context, callback) {
     loadTemplate('event/map', context, function (content) {
-        if (content == '') {
-            callback("Cannot load map!");
-        } else {
-            mainView.router.loadContent(content);
-            callback(null);
-        }
+        callback(content)
     });
 }
 
 function loadEventGallery(context, callback) {
     loadTemplate('event/gallery', context, function (content) {
-        if (content == '') {
-            callback("Cannot load gallery!");
-        } else {
-            callback(content);
-        }
+        callback(content);
     });
 }
 
 function loadEventImage(context, callback) {
     loadTemplate('event/image', context, function (content) {
-        if (content == '') {
-            callback(content, newError('template', 'loadEventImage: content empty'))
-        } else {
-            mainView.router.loadContent(content);
-            callback(null, null);
-        }
+        callback(content);
     });
 }
 
@@ -425,4 +356,64 @@ function newError(code, message) {
         code: code,
         message: message
     };
+}
+
+function loadContent(content) {
+    if (content != '') {
+        mainView.router.loadContent(content);
+    } else {
+        console.log('empty content');
+    }
+}
+
+function reloadContent(content) {
+    if (content != '') {
+        mainView.router.reloadContent(content)
+    } else {
+        console.log('empty content');
+    }
+}
+
+function backContent() {
+    mainView.router.back();
+}
+
+function onError(err) {
+    if (err) {
+        console.log("ERROR: " + err.message);
+    }
+}
+
+function sendDialogAlert(message, callback) {
+    navigator.notification.alert(message, callback, 'Alert', 'Dismiss');
+}
+function sendDialogConfirm(title, message, buttons, callback) {
+    navigator.notification.confirm(
+        message,
+        callback,
+        title,
+        buttons
+    );
+}
+
+function sendNotify(message) {
+    app.addNotification({
+        hold: 3000,
+        closeOnClick: true,
+        message: message
+    });
+}
+
+function validateEvent(event, callback) {
+    var err = [];
+    if (event.name == "") {
+        err.push("Event name is required!");
+    }
+    if (event.date == "") {
+        err.push("Event date is required!");
+    }
+    if (event.organizer == "") {
+        err.push("Event organizer is required!");
+    }
+    callback(err);
 }

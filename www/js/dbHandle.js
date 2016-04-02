@@ -1,29 +1,40 @@
-function validateEvent(event, callback) {
-    var err = [];
-    if (event.name == "") {
-        err.push("Event name is required!");
+function initDb(callback) {
+    var conn = connect();
+    if (conn) {
+        //dropTable(conn);
+        createTable(conn);
+        callback(conn);
     }
-    if (event.date == "") {
-        err.push("Event date is required!");
-    }
-    if (event.organizer == "") {
-        err.push("Event organizer is required!");
-    }
-    callback(err);
+}
+
+function connect() {
+    return window.openDatabase("madDiscovery", '', "madDiscovery", 2000000);
+}
+
+function createTable(conn) {
+    conn.transaction(function (tx) {
+        tx.executeSql("CREATE TABLE IF NOT EXISTS events(" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, date TEXT, time TEXT, organizer TEXT, location TEXT, lat REAL, lng REAL)");
+        tx.executeSql("CREATE TABLE IF NOT EXISTS images(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, path TEXT, eid INTEGER)");
+    }, onError);
+}
+
+function dropTable(conn) {
+    conn.transaction(function (tx) {
+        tx.executeSql("DROP TABLE IF EXISTS events");
+        tx.executeSql("DROP TABLE IF EXISTS images");
+    }, onError);
 }
 
 function insertEvent(conn, event, callback) {
     conn.transaction(function (tx) {
-            tx.executeSql("INSERT INTO events(name, date, time, organizer, location, lat, lng) VALUES(?,?,?,?,?,?,?)",
-                [event.name, event.date, event.time, event.organizer, event.location, event.lat, event.lng],
-                function (tx, results) {
-                    callback(results.insertId)
-                },
-                onError
-            );
-        },
-        onError
-    );
+        tx.executeSql("INSERT INTO events(name, date, time, organizer, location, lat, lng) VALUES(?,?,?,?,?,?,?)",
+            [event.name, event.date, event.time, event.organizer, event.location, event.lat, event.lng],
+            function (tx, results) {
+                event.id = results.insertId;
+                callback(event);
+            }, onError);
+    }, onError);
 }
 
 function getEvent(conn, id, callback) {
@@ -75,7 +86,6 @@ function selectImageByEvent(conn, eid, callback) {
         tx.executeSql("SELECT * FROM images WHERE eid = ?",
             [eid],
             function (tx, results) {
-                console.log(results);
                 var images = [];
                 var total = results.rows.length;
                 for (var i = 0; i < total; i++) {
@@ -86,10 +96,10 @@ function selectImageByEvent(conn, eid, callback) {
     }, onError);
 }
 
-function deleteImage(conn, id, callback){
-    conn.transaction(function(tx){
-       tx.executeSql("DELETE FROM images WHERE id = ?", [id], function(tx, results){
-           callback('success');
-       }, onError);
+function deleteImage(conn, id, callback) {
+    conn.transaction(function (tx) {
+        tx.executeSql("DELETE FROM images WHERE id = ?", [id], function (tx, results) {
+            callback('success');
+        }, onError);
     });
 }
