@@ -16,7 +16,9 @@
 
         <div class="page-content">
             <form id="event-form">
+                {{#if @global.event}}
                 <input type="hidden" id="event-id" name="id" value="{{@global.event.id}}"/>
+                {{/if}}
                 <div class="list-block">
                     <ul>
                         <li>

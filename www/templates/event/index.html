@@ -7,7 +7,7 @@
                         <i class="fa fa-bars"></i>
                     </a>
                 </div>
-                <div class="center">madDiscovery</div>
+                <div class="center">Events</div>
                 <div class="right">
                     <a href="#" class="link icon-only" id="event-add">
                         <i class="fa fa-plus"></i>
@@ -17,51 +17,85 @@
         </div>
         <div class="toolbar tabbar">
             <div class="toolbar-inner">
-                <a href="#tab1" class="button tab-link">Tab1</a>
-                <a href="#tab2" class="button tab-link">Tab2</a>
-                <a href="#tab3" class="button tab-link">Tab3</a>
-                <span class="tab-link-highlight"></span>
+                <a href="#tab1" class="button tab-link">Today</a>
+                <a href="#tab2" class="button tab-link">This Week</a>
+                <a href="#tab3" class="button tab-link">This Month</a>
             </div>
         </div>
-        <!--<div class="tabs-swipeable-wrap">
+        <div class="tabs-swipeable-wrap">
             <div class="tabs">
                 <div class="page-content tab active" id="tab1">
                     <div class="content-block">
-                        Tab 1
-                    </div>
-                </div>
-                <div class="page-content tab active" id="tab2">
-                    <div class="content-block">
-                        Tab 2
-                    </div>
-                </div>
-                <div class="page-content tab active" id="tab3">
-                    <div class="content-block">
-                        Tab 3
-                    </div>
-                </div>
-            </div>
-        </div>-->
-        <div class="page-content">
-            <div class="content-block-title">Events</div>
-            <div id="event-list">
+                        <div class="event-list">
+                            <div class="row">
+                                {{#each @global.today reverse="true"}}
+                                <div class="card col-100 tablet-30 no-gutter">
+                                    <div class="card-header">
+                                        <a href="#" class="{{id}}">
+                                            {{name}}
+                                        </a>
+                                    </div>
 
-                {{#each @global.events reverse="true"}}
-                <div class="card">
-                    <div class="card-header">
-                        <a href="#" id="{{id}}">
-                            {{name}}
-                        </a>
-                    </div>
-
-                    <div class="card-content">
-                        <div class="card-content-inner">
-                            <p class="color-gray">{{date}} {{time}}</p>
-                            <p>{{location}}</p>
+                                    <div class="card-content">
+                                        <div class="card-content-inner">
+                                            <p class="color-gray"><i class="fa fa-calendar"></i> {{date}} {{time}}</p>
+                                            <p><i class="fa fa-map-marker"></i> {{location}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{/each}}
+                            </div>
                         </div>
                     </div>
                 </div>
-                {{/each}}
+                <div class="page-content tab" id="tab2">
+                    <div class="content-block">
+                        <div class="event-list">
+                            <div class="row">
+                                {{#each @global.week reverse="true"}}
+                                <div class="card col-100 tablet-30 no-gutter">
+                                    <div class="card-header">
+                                        <a href="#" class="{{id}}">
+                                            {{name}}
+                                        </a>
+                                    </div>
+
+                                    <div class="card-content">
+                                        <div class="card-content-inner">
+                                            <p class="color-gray"><i class="fa fa-calendar"></i> {{date}} {{time}}</p>
+                                            <p><i class="fa fa-map-marker"></i> {{location}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="page-content tab" id="tab3">
+                    <div class="content-block">
+                        <div class="event-list">
+                            <div class="row">
+                                {{#each @global.events reverse="true"}}
+                                <div class="card col-100 tablet-30 no-gutter">
+                                    <div class="card-header">
+                                        <a href="#" class="{{id}}">
+                                            {{name}}
+                                        </a>
+                                    </div>
+
+                                    <div class="card-content">
+                                        <div class="card-content-inner">
+                                            <p class="color-gray"><i class="fa fa-calendar"></i> {{date}} {{time}}</p>
+                                            <p><i class="fa fa-map-marker"></i> {{location}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                {{/each}}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

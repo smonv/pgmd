@@ -5,6 +5,11 @@ var fs;
 var T7 = Template7;
 T7.global = {};
 
+Date.prototype.getWeek = function () {
+    var onejan = new Date(this.getFullYear(), 0, 1);
+    return Math.ceil((((this - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+};
+
 function onDeviceReady() {
     console.log("app starting...");
     initApp();
@@ -43,7 +48,7 @@ function initApp() {
 
 function startApp() {
 
-    listEvent(T7.global.conn, onSuccessListEvent);
+    initEvent();
 
     app.onPageInit('index', function () {
         $('a#event-add').on('click', function (e) {
@@ -54,10 +59,10 @@ function startApp() {
 
         $('div.card-header a').on('click', function (e) {
             e.preventDefault();
-            var id = $(this).attr('id');
+            var eid = $(this).attr('class');
             T7.global.action = 'Edit';
 
-            getEvent(T7.global.conn, id, onSuccessGetEvent);
+            getEvent(T7.global.conn, eid, onSuccessGetEvent);
         });
     });
 
@@ -93,10 +98,12 @@ function startApp() {
                     });
                 }
                 else {
-                    if (event.id == "") {
+                    if (!event.id) {
                         addNewEvent(event);
                     } else {
-                        updateOldEvent(event);
+                        if (event.id != "") {
+                            updateOldEvent(event);
+                        }
                     }
                 }
             });
@@ -176,6 +183,35 @@ function startApp() {
             e.preventDefault();
             sendDialogConfirm('Remove Image', 'Are you sure to remove this image?', ['Remove', 'Cancle'], onRemoveImage);
         });
+    });
+}
+
+function initEvent() {
+    var m = thisMonthToString();
+    selectEventByMonth(T7.global.conn, m, function (events) {
+        filterEvent(events);
+        loadEventIndex(loadContent);
+    });
+}
+
+function filterEvent(events){
+    var d = new Date();
+    T7.global.events = events;
+    T7.global.today = [];
+    T7.global.week = [];
+
+    $.each(events, function (i, v) {
+        var ed = new Date(v.date);
+        if (ed.getDate() == d.getDate()) {
+            T7.global.today.push(v);
+        }
+    });
+
+    $.each(events, function (i, v) {
+        var ed = new Date(v.date);
+        if (ed.getWeek() == d.getWeek()) {
+            T7.global.week.push(v);
+        }
     });
 }
 
@@ -260,9 +296,11 @@ function removeImage(path, callback) {
 }
 
 function onSuccessInsertEvent(event) {
-    T7.global.events.push(event);
-    reloadEventList(reloadContent);
-    sendNotify("New event created");
+    selectEventByMonth(T7.global.conn, thisMonthToString(), function (events) {
+        filterEvent(events);
+        reloadEventList(reloadContent);
+        sendNotify("New event created");
+    });
 }
 
 function addNewEvent(event) {
@@ -276,11 +314,15 @@ function onSuccessUpdateEvent(event) {
         }
     });
 
-    reloadEventList(function (content) {
-        reloadContent(content);
-        sendNotify("Event Updated");
-        T7.global.event = null;
+    selectEventByMonth(T7.global.conn, thisMonthToString(), function (events) {
+        filterEvent(events);
+        reloadEventList(function (content) {
+            reloadContent(content);
+            sendNotify("Event Updated");
+            T7.global.event = null;
+        });
     });
+
 }
 
 function updateOldEvent(event) {
@@ -373,7 +415,7 @@ function backContent() {
 
 function onError(err) {
     if (err) {
-        console.log("ERROR: " + err.message);
+        console.log("ERROR: " + err.code + " - " + err.message);
     }
 }
 
@@ -409,4 +451,13 @@ function validateEvent(event, callback) {
         err.push("Event organizer is required!");
     }
     callback(err);
+}
+
+function thisMonthToString(){
+    var d = new Date();
+    var m = d.getMonth() + 1;
+    if (m < 10) {
+        m = '0' + m;
+    }
+    return m;
 }

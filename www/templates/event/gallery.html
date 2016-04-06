@@ -2,8 +2,8 @@
 
     <div class="content-block">
         <div class="row">
-            {{#each @global.images}}
-            <div class="col-33 no-gutter">
+            {{#each @global.event.images}}
+            <div class="col-33 tablet-auto no-gutter">
                 <img src="{{path}}" class="event-img" style="max-width: 100%" id="{{id}}"/>
             </div>
             {{/each}}
