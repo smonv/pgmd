@@ -7,7 +7,7 @@
                         <i class="fa fa-arrow-left"></i>
                     </a>
                 </div>
-                <div class="center">{{action}} Event</div>
+                <div class="center">{{@global.action}} Event</div>
                 <div class="right">
                     <p><a href="#" class="button" id="save-event">Save</a></p>
                 </div>
@@ -16,7 +16,7 @@
 
         <div class="page-content">
             <form id="event-form">
-                <input type="hidden" id="event-id" name="id" value="{{id}}"/>
+                <input type="hidden" id="event-id" name="id" value="{{@global.event.id}}"/>
                 <div class="list-block">
                     <ul>
                         <li>

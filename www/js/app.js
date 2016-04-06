@@ -2,6 +2,8 @@ var app;
 var mainView;
 var global = {};
 var fs;
+var T7 = Template7;
+T7.global = {};
 
 function onDeviceReady() {
     console.log("app starting...");
@@ -33,7 +35,7 @@ function initApp() {
         if (!connection) {
             console.log("CANNOT CONNECT DATABASE");
         } else {
-            global.conn = connection;
+            T7.global.conn = connection;
             startApp();
         }
     });
@@ -41,41 +43,39 @@ function initApp() {
 
 function startApp() {
 
-    listEvent(global.conn, onSuccessListEvent);
+    listEvent(T7.global.conn, onSuccessListEvent);
 
     app.onPageInit('index', function () {
         $('a#event-add').on('click', function (e) {
             e.preventDefault();
-            global.action = 'Add';
-            loadEventForm(global, loadContent);
+            T7.global.action = 'Add';
+            loadEventForm(loadContent);
         });
 
         $('div.card-header a').on('click', function (e) {
             e.preventDefault();
             var id = $(this).attr('id');
-            global.action = 'Edit';
+            T7.global.action = 'Edit';
 
-            getEvent(global.conn, id, onSuccessGetEvent);
+            getEvent(T7.global.conn, id, onSuccessGetEvent);
         });
     });
 
     app.onPageInit('event-form', function () {
         $('div.list-block').removeClass('inputs-list');
 
-        app.calendar({
-            input: '#event-date'
-        });
+        app.calendar({input: '#event-date'});
 
         $('a#load-map').on('click', function (e) {
             e.preventDefault();
             navigator.geolocation.getCurrentPosition(function (pos) {
-                global.event = {
+                T7.global.event = {
                     lat: pos.coords.latitude,
                     lng: pos.coords.longitude
                 };
 
-                if (global.event) {
-                    loadMap(global, loadContent);
+                if (T7.global.event) {
+                    loadMap(loadContent);
                 }
 
             }, function (err) {
@@ -114,22 +114,22 @@ function startApp() {
         };
 
         options.center = {
-            lat: global.event.lat,
-            lng: global.event.lng
+            lat: T7.global.event.lat,
+            lng: T7.global.event.lng
         };
 
         initMap(options, function (mapdata) {
-            global.map = mapdata;
+            T7.global.map = mapdata;
         });
 
 
         $('#map-done').on('click', function (e) {
             e.preventDefault();
             backContent();
-            if (global.map) {
-                $('#event-location').val(global.map.formatted_address);
-                $('#event-lat').val(global.map.geometry.location.lat());
-                $('#event-lng').val(global.map.geometry.location.lng());
+            if (T7.global.map) {
+                $('#event-location').val(T7.global.map.formatted_address);
+                $('#event-lat').val(T7.global.map.geometry.location.lat());
+                $('#event-lng').val(T7.global.map.geometry.location.lng());
             }
         });
     });
@@ -138,15 +138,15 @@ function startApp() {
         $('div.list-block').removeClass('inputs-list');
         $('a#event-edit').on('click', function (e) {
             e.preventDefault();
-            loadEventForm(global, function (content) {
+            loadEventForm(function (content) {
                 if (content != null) {
                     mainView.router.loadContent(content);
-                    app.formFromJSON('#event-form', global.event);
+                    app.formFromJSON('#event-form', T7.global.event);
                 }
             });
         });
 
-        selectImageByEvent(global.conn, global.event.id, onSuccessSelectImage);
+        selectImageByEvent(T7.global.conn, T7.global.event.id, onSuccessSelectImage);
 
 
         $('a#choose').on('click', function () {
@@ -160,13 +160,13 @@ function startApp() {
         $(document).on('click', 'img.event-img', function (e) {
             e.preventDefault();
             var id = $(this).attr('id');
-            $.each(global.event.images, function (i, v) {
+            $.each(T7.global.event.images, function (i, v) {
                 if (v.id == id) {
-                    global.image = v;
+                    T7.global.image = v;
                 }
             });
-            if (global.image) {
-                loadEventImage(global.image, loadContent);
+            if (T7.global.image) {
+                loadEventImage(loadContent);
             }
         });
     });
@@ -180,18 +180,18 @@ function startApp() {
 }
 
 function onSuccessListEvent(events) {
-    global.events = events;
-    loadEventIndex(global, loadContent);
+    T7.global.events = events;
+    loadEventIndex(loadContent);
 }
 
 function onSuccessGetEvent(event) {
-    global.event = event;
-    loadEventDetail(global, loadContent);
+    T7.global.event = event;
+    loadEventDetail(loadContent);
 }
 
 function onSuccessSelectImage(images) {
-    global.event.images = images;
-    loadEventGallery({images: images}, function (content) {
+    T7.global.event.images = images;
+    loadEventGallery(function (content) {
         $('div#gallery').empty().append(content);
     });
 }
@@ -205,29 +205,29 @@ function onSuccessResolveLocalFS(entry) {
 }
 
 function onSuccessCopyImage(image) {
-    insertImage(global.conn, image, onSuccessInsertImage, onError);
+    insertImage(T7.global.conn, image, onSuccessInsertImage, onError);
 }
 
 function onSuccessInsertImage() {
-    selectImageByEvent(global.conn, global.event.id, onSuccessSelectImage, onError);
+    selectImageByEvent(T7.global.conn, T7.global.event.id, onSuccessSelectImage, onError);
 }
 
 function onRemoveImage(buttonIndex) {
     if (buttonIndex == 1) {
-        removeImage(global.image.path, onSuccessRemoveImage);
+        removeImage(T7.global.image.path, onSuccessRemoveImage);
     }
 }
 function onSuccessRemoveImage(result) {
     if (result == 'success') {
-        deleteImage(global.conn, global.image.id, onSuccessDeleteImage);
+        deleteImage(T7.global.conn, T7.global.image.id, onSuccessDeleteImage);
     }
 }
 function onSuccessDeleteImage(result) {
     if (result == 'success') {
         backContent();
-        selectImageByEvent(global.conn, global.event.id, onSuccessSelectImage);
-        sendNotify(global.image.name + ' removed.');
-        global.image = null;
+        selectImageByEvent(T7.global.conn, T7.global.event.id, onSuccessSelectImage);
+        sendNotify(T7.global.image.name + ' removed.');
+        T7.global.image = null;
     }
 }
 
@@ -237,7 +237,7 @@ function copyImage(fileEntry, callback) {
     var newFilename = n + '.jpg';
     var image = {
         name: newFilename,
-        eid: global.event.id
+        eid: T7.global.event.id
     };
     fs.root.getDirectory('images', {
         create: true,
@@ -259,39 +259,39 @@ function removeImage(path, callback) {
     }, onError);
 }
 
-function onSuccessInsertEvent(event){
-    global.events.push(event);
-    reloadEventList(global, reloadContent);
+function onSuccessInsertEvent(event) {
+    T7.global.events.push(event);
+    reloadEventList(reloadContent);
     sendNotify("New event created");
 }
 
 function addNewEvent(event) {
-    insertEvent(global.conn, event, onSuccessInsertEvent);
+    insertEvent(T7.global.conn, event, onSuccessInsertEvent);
 }
 
 function onSuccessUpdateEvent(event) {
-    global.events.forEach(function (v, k) {
+    T7.global.events.forEach(function (v, k) {
         if (v.id == event.id) {
-            global.events[k] = event;
+            T7.global.events[k] = event;
         }
     });
 
-    reloadEventList(global, function (content) {
+    reloadEventList(function (content) {
         reloadContent(content);
         sendNotify("Event Updated");
-        global.event = null;
+        T7.global.event = null;
     });
 }
 
 function updateOldEvent(event) {
-    updateEvent(global.conn, event, onSuccessUpdateEvent);
+    updateEvent(T7.global.conn, event, onSuccessUpdateEvent);
 }
 
-function loadTemplate(template, context, callback) {
+function loadTemplate(template, callback) {
     $.get('templates/' + template + '.html')
         .success(function (result) {
             var compiledTemplate = Template7.compile($(result).html());
-            var html = compiledTemplate(context);
+            var html = compiledTemplate();
             callback(html);
         })
         .error(function () {
@@ -299,44 +299,44 @@ function loadTemplate(template, context, callback) {
         });
 }
 
-function loadEventIndex(context, callback) {
-    loadTemplate('event/index', context, function (content) {
+function loadEventIndex(callback) {
+    loadTemplate('event/index', function (content) {
         callback(content);
     });
 }
 
-function reloadEventList(context, callback) {
-    loadTemplate('event/index', context, function (content) {
+function reloadEventList(callback) {
+    loadTemplate('event/index', function (content) {
         callback(content);
     });
 }
 
-function loadEventForm(context, callback) {
-    loadTemplate('event/form', context, function (content) {
+function loadEventForm(callback) {
+    loadTemplate('event/form', function (content) {
         callback(content);
     });
 }
 
-function loadEventDetail(context, callback) {
-    loadTemplate('event/detail', context, function (content) {
+function loadEventDetail(callback) {
+    loadTemplate('event/detail', function (content) {
         callback(content);
     });
 }
 
-function loadMap(context, callback) {
-    loadTemplate('event/map', context, function (content) {
+function loadMap(callback) {
+    loadTemplate('event/map', function (content) {
         callback(content)
     });
 }
 
-function loadEventGallery(context, callback) {
-    loadTemplate('event/gallery', context, function (content) {
+function loadEventGallery(callback) {
+    loadTemplate('event/gallery', function (content) {
         callback(content);
     });
 }
 
-function loadEventImage(context, callback) {
-    loadTemplate('event/image', context, function (content) {
+function loadEventImage(callback) {
+    loadTemplate('event/image', function (content) {
         callback(content);
     });
 }
@@ -349,13 +349,6 @@ function getPhoto(source, callback) {
         allowEdit: true,
         encodingType: Camera.EncodingType.JPEG
     });
-}
-
-function newError(code, message) {
-    return {
-        code: code,
-        message: message
-    };
 }
 
 function loadContent(content) {
