@@ -1,13 +1,19 @@
 #main-menu .item-link .item-inner {
     background-image: none;
 }
-
+.list-block{
+    margin: 0 !important;
+}
 .list-block ul:before {
-    display: none;
+    display: none !important;
 }
 
 .list-block ul:after {
-    display: none;
+    display: none !important;
+}
+
+.buttons-row{
+    margin: 0 !important;
 }
 
 #map {

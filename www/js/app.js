@@ -172,6 +172,7 @@ function startApp() {
                     T7.global.image = v;
                 }
             });
+
             if (T7.global.image) {
                 loadEventImage(loadContent);
             }
@@ -336,7 +337,8 @@ function loadTemplate(template, callback) {
             var html = compiledTemplate();
             callback(html);
         })
-        .error(function () {
+        .error(function (xhr, err) {
+            console.log(err);
             callback('');
         });
 }
@@ -379,6 +381,7 @@ function loadEventGallery(callback) {
 
 function loadEventImage(callback) {
     loadTemplate('event/image', function (content) {
+        console.log(content);
         callback(content);
     });
 }
