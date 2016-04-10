@@ -14,11 +14,9 @@ function connect() {
 function createTable(conn) {
     conn.transaction(function (tx) {
         tx.executeSql("CREATE TABLE IF NOT EXISTS events(" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, type TEXT, date DATETIME, time TEXT, organizer TEXT, location TEXT, lat REAL, lng REAL)");
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, type TEXT, date TEXT, time TEXT, organizer TEXT, location TEXT, lat REAL, lng REAL)");
         tx.executeSql("CREATE TABLE IF NOT EXISTS images(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, path TEXT, eid INTEGER)");
-    }, function (error) {
-        console.log(error);
-    });
+    }, onDbError);
 }
 
 function dropTable(conn) {
@@ -48,7 +46,7 @@ function getEvent(conn, id, callback) {
                 console.log(results);
                 callback(results.rows.item(0));
             },
-            onDbError);
+            onError);
     }, onDbError);
 }
 
@@ -88,14 +86,26 @@ function selectEventByMonth(conn, m, callback) {
                     events.push(row);
                 }
                 callback(events);
-            }, function(tx, error){
-                console.log(error);
-            });
-    }, onDbError);
+            }, onDbError);
+    }, onError);
 }
 
 function searchEvent(conn, searchQuery, searchData, callback) {
-
+    console.log(searchQuery);
+    console.log(searchData);
+    conn.transaction(function(tx){
+        tx.executeSql(searchQuery, searchData, function (tx, results) {
+            var events = [];
+            var total = results.rows.length;
+            for (var i = 0; i< total; i++){
+                var row = results.rows.item(i);
+                events.push(row);
+            }
+            callback(events);
+        }, function (tx, err) {
+            console.log(err);
+        });
+    }, onError);
 }
 
 function insertImage(conn, image, callback) {

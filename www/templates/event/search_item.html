@@ -1,0 +1,27 @@
+<script type="text/template7">
+    <div class="content-block">
+        <div class="row">
+            {{#each @global.search}}
+            <div class="card col-100 tablet-30 no-gutter">
+                <div class="card-header">
+                    <a href="#" class="{{id}}">
+                        {{name}}
+                    </a>
+                </div>
+
+                <div class="card-content">
+                    <div class="card-content-inner">
+                        <p class="color-gray"><i class="fa fa-calendar"></i> {{date}}</p>
+                        {{#if time}}
+                        <p class="color-gray"><i class="fa fa-clock-o"></i> {{time}}</p>
+                        {{/if}}
+                        {{#if location}}
+                        <p><i class="fa fa-map-marker"></i> {{location}}</p>
+                        {{/if}}
+                    </div>
+                </div>
+            </div>
+            {{/each}}
+        </div>
+    </div>
+</script>

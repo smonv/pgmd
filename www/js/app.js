@@ -49,6 +49,7 @@ function initApp() {
 function startApp() {
 
     T7.global.types = [
+        {text: "Event type", value: ""},
         {text: "Conferences", value: "Conferences"},
         {text: "Seminars", value: "Seminars"},
         {text: "Meetings", value: "Meetings"},
@@ -200,28 +201,57 @@ function startApp() {
     });
 
     app.onPageInit('event-search', function () {
+        app.calendar({input: '#event-date'});
+
         $('a#search-submit').on('click', function (e) {
+            e.preventDefault();
             var query = "SELECT * FROM events WHERE ";
             var searchData = [];
             var formData = app.formToJSON('#search-form');
             var keys = Object.keys(formData);
+            var idx = -1;
+            check:
+                for (var j = 0; j < keys.length; j++) {
+                    if (keys[j] == "lng" || keys[j] == "lat") {
+                        if (formData[keys[j]] != "") {
+                            idx = keys.indexOf("location");
+                            console.log(idx);
+                            break check;
+                        }
+                    }
+                }
+            if (idx > -1) {
+                keys.splice(idx, 1);
+            }
 
             var first = true;
             for (var i = 0; i < keys.length; i++) {
                 if (formData[keys[i]] != "") {
-                    if (first) {
-                        query += keys[i] + " MATCH ?"
-                    } else {
-                        query += " AND " + keys[i] + " MATCH ?"
+
+                    if (!first) {
+                        query += " AND ";
                     }
-                    searchData.push(formData[keys[i]]);
+
+                    if (keys[i] == "type" || keys[i] == "date" || keys[i] == "lat" || keys[i] == "lng") {
+                        query += keys[i] + " == ?";
+                        searchData.push(formData[keys[i]]);
+                    } else {
+                        query += keys[i] + " LIKE ?";
+                        searchData.push("'%" + formData[keys[i]] + "%'");
+                    }
+
                     first = false;
                 }
             }
-            
-            //searchData = $.map(searchData, function(v,i){ return [v]});
-            console.log(query);
-            console.log(searchData);
+
+            searchEvent(T7.global.conn, query, searchData, function (events) {
+                T7.global.search = events;
+                if (T7.global.search) {
+                    loadSearchItem(function (content) {
+                        $('div.event-list').empty().append(content);
+                    });
+                }
+            });
         });
 
         $('a#load-map').on('click', function (e) {
@@ -448,6 +478,12 @@ function loadSearchPage(callback) {
     loadTemplate('event/search', function (content) {
         callback(content);
     });
+}
+
+function loadSearchItem(callback) {
+    loadTemplate('event/search_item', function (content) {
+        callback(content);
+    })
 }
 
 function getPhoto(source, callback) {

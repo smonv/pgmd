@@ -18,11 +18,24 @@
 
         <div class="page-content">
             <form id="search-form">
-                {{#if @global.event}}
-                <input type="hidden" id="event-id" name="id" value="{{@global.event.id}}"/>
-                {{/if}}
                 <div class="list-block">
                     <ul>
+                        <li>
+                            <a href="#" class="item-link smart-select" data-back-on-select="true">
+                                <select name="type">
+                                    {{#each @global.types}}
+                                    <option value="{{this.value}}">{{this.text}}</option>
+                                    {{/each}}
+                                </select>
+
+                                <div class="item-content">
+                                    <div class="item-media"><i class="fa fa-flag"></i></div>
+                                    <div class="item-inner" style="margin: 0">
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+
                         <li>
                             <div class="item-content">
                                 <div class="item-media"><i class="fa fa-calendar"></i></div>
@@ -58,6 +71,10 @@
                     </ul>
                 </div>
             </form>
+
+            <div class="event-list">
+
+            </div>
         </div>
     </div>
 </script>
