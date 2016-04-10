@@ -91,8 +91,6 @@ function selectEventByMonth(conn, m, callback) {
 }
 
 function searchEvent(conn, searchQuery, searchData, callback) {
-    console.log(searchQuery);
-    console.log(searchData);
     conn.transaction(function(tx){
         tx.executeSql(searchQuery, searchData, function (tx, results) {
             var events = [];

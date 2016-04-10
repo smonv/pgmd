@@ -215,7 +215,6 @@ function startApp() {
                     if (keys[j] == "lng" || keys[j] == "lat") {
                         if (formData[keys[j]] != "") {
                             idx = keys.indexOf("location");
-                            console.log(idx);
                             break check;
                         }
                     }
@@ -227,11 +226,9 @@ function startApp() {
             var first = true;
             for (var i = 0; i < keys.length; i++) {
                 if (formData[keys[i]] != "") {
-
                     if (!first) {
                         query += " AND ";
                     }
-
                     if (keys[i] == "type" || keys[i] == "date" || keys[i] == "lat" || keys[i] == "lng") {
                         query += keys[i] + " == ?";
                         searchData.push(formData[keys[i]]);
@@ -239,7 +236,6 @@ function startApp() {
                         query += keys[i] + " LIKE ?";
                         searchData.push("'%" + formData[keys[i]] + "%'");
                     }
-
                     first = false;
                 }
             }
