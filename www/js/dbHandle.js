@@ -1,7 +1,7 @@
 function initDb(callback) {
     var conn = connect();
     if (conn) {
-        //dropTable(conn);
+        dropTable(conn);
         createTable(conn);
         callback(conn);
     }
@@ -13,10 +13,12 @@ function connect() {
 
 function createTable(conn) {
     conn.transaction(function (tx) {
-        tx.executeSql("CREATE TABLE IF NOT EXISTS events(" +
+        tx.executeSql("CREATE VIRTUAL TABLE IF NOT EXISTS events USING fts3(" +
             "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, date TEXT, time TEXT, organizer TEXT, location TEXT, lat REAL, lng REAL)");
         tx.executeSql("CREATE TABLE IF NOT EXISTS images(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, path TEXT, eid INTEGER)");
-    }, onDbError);
+    }, function (error) {
+        console.log(error);
+    });
 }
 
 function dropTable(conn) {
@@ -84,8 +86,14 @@ function selectEventByMonth(conn, m, callback) {
                     events.push(row);
                 }
                 callback(events);
-            }, onDbError);
+            }, function(tx, error){
+                console.log(error);
+            });
     }, onDbError);
+}
+
+function searchEvent(conn, searchQuery, searchData, callback) {
+
 }
 
 function insertImage(conn, image, callback) {
@@ -120,6 +128,6 @@ function deleteImage(conn, id, callback) {
     });
 }
 
-function onDbError(tx, err) {
+function onDbError(err) {
     console.log("ERROR: " + err.code + " - " + err.message)
 }

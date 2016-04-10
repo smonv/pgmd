@@ -60,9 +60,13 @@ function startApp() {
         $('div.card-header a').on('click', function (e) {
             e.preventDefault();
             var eid = $(this).attr('class');
-            T7.global.action = 'Edit';
 
             getEvent(T7.global.conn, eid, onSuccessGetEvent);
+        });
+
+        $('a#event-search').on('click', function (e) {
+            e.preventDefault();
+            loadSearchPage(loadContent);
         });
     });
 
@@ -185,6 +189,50 @@ function startApp() {
             sendDialogConfirm('Remove Image', 'Are you sure to remove this image?', ['Remove', 'Cancle'], onRemoveImage);
         });
     });
+
+    app.onPageInit('event-search', function () {
+        $('a#search-submit').on('click', function (e) {
+            var query = "SELECT * FROM events WHERE ";
+            var searchData = [];
+            var formData = app.formToJSON('#search-form');
+            var keys = Object.keys(formData);
+
+            var first = true;
+            for (var i = 0; i < keys.length; i++) {
+                if (formData[keys[i]] != "") {
+                    if (first) {
+                        query += keys[i] + " MATCH ?"
+                    } else {
+                        query += " AND " + keys[i] + " MATCH ?"
+                    }
+                    searchData.push(formData[keys[i]]);
+                    first = false;
+                }
+            }
+            
+            //searchData = $.map(searchData, function(v,i){ return [v]});
+            console.log(query);
+            console.log(searchData);
+        });
+
+        $('a#load-map').on('click', function (e) {
+            e.preventDefault();
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                T7.global.event = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                };
+
+                if (T7.global.event) {
+                    loadMap(loadContent);
+                }
+
+            }, function (err) {
+                sendDialogAlert('Please enable Location to use map.', null);
+                console.log(err);
+            }, {maximumAge: 0, timeout: 10000, enableHighAccuracy: true});
+        });
+    });
 }
 
 function initEvent() {
@@ -195,7 +243,7 @@ function initEvent() {
     });
 }
 
-function filterEvent(events){
+function filterEvent(events) {
     var d = new Date();
     T7.global.events = events;
     T7.global.today = [];
@@ -386,6 +434,12 @@ function loadEventImage(callback) {
     });
 }
 
+function loadSearchPage(callback) {
+    loadTemplate('event/search', function (content) {
+        callback(content);
+    });
+}
+
 function getPhoto(source, callback) {
     navigator.camera.getPicture(callback, onError, {
         quality: 100,
@@ -456,7 +510,7 @@ function validateEvent(event, callback) {
     callback(err);
 }
 
-function thisMonthToString(){
+function thisMonthToString() {
     var d = new Date();
     var m = d.getMonth() + 1;
     if (m < 10) {
