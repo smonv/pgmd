@@ -48,6 +48,15 @@ function initApp() {
 
 function startApp() {
 
+    T7.global.types = [
+        {text: "Conferences", value: "Conferences"},
+        {text: "Seminars", value: "Seminars"},
+        {text: "Meetings", value: "Meetings"},
+        {text: "Opening Ceremonies", value: "Opening Ceremonies"},
+        {text: "Incentive Events", value: "Incentive Events"},
+        {text: "Family Events", value: "Family Events"}
+    ];
+
     initEvent();
 
     app.onPageInit('index', function () {
@@ -265,6 +274,7 @@ function filterEvent(events) {
 }
 
 function onSuccessListEvent(events) {
+    console.log(events);
     T7.global.events = events;
     loadEventIndex(loadContent);
 }

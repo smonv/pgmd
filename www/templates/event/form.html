@@ -32,6 +32,26 @@
                             </div>
                         </li>
                         <li>
+                            <a href="#" class="item-link smart-select" data-back-on-select="true">
+                                <select name="type">
+                                    {{#each @global.types}}
+                                    <option value="{{this.value}}">{{this.text}}</option>
+                                    {{/each}}
+                                </select>
+
+                                <div class="item-content">
+                                    <div class="item-media"><i class="fa fa-flag"></i></div>
+                                    <div class="item-inner" style="margin: 0">
+                                        {{#if @global.event}}
+                                        {{#if @global.event.type}}
+                                        <div class="item-after smart-select-value">{{@global.event.type}}</div>
+                                        {{/if}}
+                                        {{/if}}
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
                             <div class="item-content">
                                 <div class="item-media"><i class="fa fa-calendar"></i></div>
                                 <div class="item-input">

@@ -1,7 +1,7 @@
 function initDb(callback) {
     var conn = connect();
     if (conn) {
-        dropTable(conn);
+        //dropTable(conn);
         createTable(conn);
         callback(conn);
     }
@@ -13,8 +13,8 @@ function connect() {
 
 function createTable(conn) {
     conn.transaction(function (tx) {
-        tx.executeSql("CREATE VIRTUAL TABLE IF NOT EXISTS events USING fts3(" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, date TEXT, time TEXT, organizer TEXT, location TEXT, lat REAL, lng REAL)");
+        tx.executeSql("CREATE TABLE IF NOT EXISTS events(" +
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, type TEXT, date DATETIME, time TEXT, organizer TEXT, location TEXT, lat REAL, lng REAL)");
         tx.executeSql("CREATE TABLE IF NOT EXISTS images(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, path TEXT, eid INTEGER)");
     }, function (error) {
         console.log(error);
@@ -30,13 +30,14 @@ function dropTable(conn) {
 
 function insertEvent(conn, event, callback) {
     conn.transaction(function (tx) {
-        tx.executeSql("INSERT INTO events(name, date, time, organizer, location, lat, lng) VALUES(?,?,?,?,?,?,?)",
-            [event.name, event.date, event.time, event.organizer, event.location, event.lat, event.lng],
+        tx.executeSql("INSERT INTO events(name, type, date, time, organizer, location, lat, lng) VALUES(?,?,?,?,?,?,?,?)",
+            [event.name, event.type, event.date, event.time, event.organizer, event.location, event.lat, event.lng],
             function (tx, results) {
+                console.log(results);
                 event.id = results.insertId;
                 callback(event);
             }, onDbError);
-    }, onDbError);
+    }, onError);
 }
 
 function getEvent(conn, id, callback) {
@@ -44,6 +45,7 @@ function getEvent(conn, id, callback) {
         tx.executeSql("SELECT * FROM events WHERE id = ?",
             [id],
             function (tx, results) {
+                console.log(results);
                 callback(results.rows.item(0));
             },
             onDbError);
