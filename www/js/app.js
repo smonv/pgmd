@@ -157,42 +157,7 @@ function startApp() {
 
     app.onPageInit('event-detail', function () {
         $('div.list-block').removeClass('inputs-list');
-        $('a#more').on('click', function (e) {
-            e.preventDefault();
-            var target = this;
-            var buttons = [
-                {
-                    text: 'Edit',
-                    onClick: function(){
-                        loadEventForm(function (content) {
-                            if (content != null) {
-                                mainView.router.loadContent(content);
-                                app.formFromJSON('#event-form', T7.global.event);
-                            }
-                        });
-                    }
-                },
-                {
-                    text: 'Delete'
-                },
-                {
-                    text: 'New Report'
-                },
-                {
-                    text: 'Take photo',
-                    onClick: function(){
-                        getPhoto(Camera.PictureSourceType.CAMERA, onSuccessGetPhoto);
-                    }
-                },
-                {
-                    text: 'Choose photo',
-                    onClick: function(){
-                        getPhoto(Camera.PictureSourceType.PHOTOLIBRARY, onSuccessGetPhoto);
-                    }
-                }
-            ];
-            app.actions(target, buttons);
-        });
+
         $('a#edit').on('click', function (e) {
             e.preventDefault();
             loadEventForm(function (content) {
@@ -215,6 +180,7 @@ function startApp() {
         });
 
         $(document).on('click', 'img.event-img', function (e) {
+            console.log('clicked');
             e.preventDefault();
             var id = $(this).attr('id');
             $.each(T7.global.event.images, function (i, v) {
@@ -452,14 +418,13 @@ function updateOldEvent(event) {
 
 function loadTemplate(template, callback) {
     $.get('templates/' + template + '.html')
-        .success(function (result) {
-            var compiledTemplate = Template7.compile($(result).html());
+        .success(function (data) {
+            var compiledTemplate = Template7.compile($(data).html());
             var html = compiledTemplate();
             callback(html);
         })
-        .error(function (xhr, err) {
+        .error(function (xhr, status, err) {
             console.log(err);
-            callback('');
         });
 }
 
@@ -501,7 +466,6 @@ function loadEventGallery(callback) {
 
 function loadEventImage(callback) {
     loadTemplate('event/image', function (content) {
-        console.log(content);
         callback(content);
     });
 }

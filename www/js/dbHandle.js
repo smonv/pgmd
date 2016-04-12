@@ -32,10 +32,10 @@ function insertEvent(conn, event, callback) {
         tx.executeSql("INSERT INTO events(name, type, date, time, organizer, location, lat, lng) VALUES(?,?,?,?,?,?,?,?)",
             [event.name, event.type, event.date, event.time, event.organizer, event.location, event.lat, event.lng],
             function (tx, results) {
-                console.log(results);
                 event.id = results.insertId;
                 callback(event);
             }, function(tx, err){
+                console.log(tx);
                 console.log(err);
             });
     }, onError);
@@ -46,7 +46,6 @@ function getEvent(conn, id, callback) {
         tx.executeSql("SELECT * FROM events WHERE id = ?",
             [id],
             function (tx, results) {
-                console.log(results);
                 callback(results.rows.item(0));
             },
             onError);
