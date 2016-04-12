@@ -15,7 +15,8 @@ function createTable(conn) {
     conn.transaction(function (tx) {
         tx.executeSql("CREATE TABLE IF NOT EXISTS events(" +
             "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, type TEXT, date TEXT, time TEXT, organizer TEXT, location TEXT, lat REAL, lng REAL)");
-        tx.executeSql("CREATE TABLE IF NOT EXISTS images(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, path TEXT, eid INTEGER)");
+        tx.executeSql("CREATE TABLE IF NOT EXISTS images(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, path TEXT, eid INTEGER, rid INTEGER)");
+        tx.executeSql("CREATE TABLE IF NOT EXISTS reports(id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT)");
     }, onDbError);
 }
 
@@ -34,7 +35,9 @@ function insertEvent(conn, event, callback) {
                 console.log(results);
                 event.id = results.insertId;
                 callback(event);
-            }, onDbError);
+            }, function(tx, err){
+                console.log(err);
+            });
     }, onError);
 }
 

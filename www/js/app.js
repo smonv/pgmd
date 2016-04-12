@@ -157,7 +157,43 @@ function startApp() {
 
     app.onPageInit('event-detail', function () {
         $('div.list-block').removeClass('inputs-list');
-        $('a#event-edit').on('click', function (e) {
+        $('a#more').on('click', function (e) {
+            e.preventDefault();
+            var target = this;
+            var buttons = [
+                {
+                    text: 'Edit',
+                    onClick: function(){
+                        loadEventForm(function (content) {
+                            if (content != null) {
+                                mainView.router.loadContent(content);
+                                app.formFromJSON('#event-form', T7.global.event);
+                            }
+                        });
+                    }
+                },
+                {
+                    text: 'Delete'
+                },
+                {
+                    text: 'New Report'
+                },
+                {
+                    text: 'Take photo',
+                    onClick: function(){
+                        getPhoto(Camera.PictureSourceType.CAMERA, onSuccessGetPhoto);
+                    }
+                },
+                {
+                    text: 'Choose photo',
+                    onClick: function(){
+                        getPhoto(Camera.PictureSourceType.PHOTOLIBRARY, onSuccessGetPhoto);
+                    }
+                }
+            ];
+            app.actions(target, buttons);
+        });
+        $('a#edit').on('click', function (e) {
             e.preventDefault();
             loadEventForm(function (content) {
                 if (content != null) {
@@ -540,6 +576,9 @@ function sendNotify(message) {
 
 function validateEvent(event, callback) {
     var err = [];
+    if (event.type == "") {
+        err.push("Event type is required!");
+    }
     if (event.name == "") {
         err.push("Event name is required!");
     }
