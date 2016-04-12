@@ -179,6 +179,10 @@ function startApp() {
             getPhoto(Camera.PictureSourceType.CAMERA, onSuccessGetPhoto);
         });
 
+        $('a#report').on('click', function () {
+            loadReport(loadContent);
+        });
+
         $(document).on('click', 'img.event-img', function (e) {
             console.log('clicked');
             e.preventDefault();
@@ -268,6 +272,46 @@ function startApp() {
                 sendDialogAlert('Please enable Location to use map.', null);
                 console.log(err);
             }, {maximumAge: 0, timeout: 10000, enableHighAccuracy: true});
+        });
+    });
+
+    app.onPageInit('reports', function () {
+        selectReportByEvent(T7.global.conn, T7.global.event.id, function (reports) {
+            $.each(reports, function (i, v) {
+                //$('div.report-list > div.list-block > ul').prepend('<li class="item-content" id="' + v.id + '">' + v.content + '</li>');
+                $('div.report-list > div.content-block').prepend(
+                    $('<div>').addClass('card').attr('id', v.id).append(
+                        $('<div>').addClass('card-header').append(v.content)
+                    )
+                );
+            });
+        });
+        $('form#report-form').on('submit', function (e) {
+            e.preventDefault();
+            var content = $('textarea#content').val();
+            insertReport(T7.global.conn, content, T7.global.event.id, function (report) {
+                $('div.report-list > div.list-block > ul').prepend('<li class="item-content" id="' + report.id + '">' + content + '</li>');
+                $('div.report-list > div.content-block').prepend(
+                    $('<div>').addClass('card').attr('id', report.id).append(
+                        $('<div>').addClass('card-header').append(report.content)
+                    )
+                );
+            });
+        });
+        $(document).on('click', 'div.card', function (e) {
+            var rid = $(this).attr('id');
+            e.preventDefault();
+            sendDialogConfirm('Delete', 'Are you sure delete this?', ['Delete', 'Cancle'], function (buttonIdx) {
+                if (buttonIdx == 1) {
+                    deleteReport(T7.global.conn, rid, function (result) {
+                        console.log(result);
+                        if (result == 'success') {
+                            $(this).remove();
+                        }
+                    });
+                }
+            });
+
         });
     });
 }
@@ -478,6 +522,12 @@ function loadSearchPage(callback) {
 
 function loadSearchItem(callback) {
     loadTemplate('event/search_item', function (content) {
+        callback(content);
+    })
+}
+
+function loadReport(callback) {
+    loadTemplate('event/reports', function (content) {
         callback(content);
     })
 }

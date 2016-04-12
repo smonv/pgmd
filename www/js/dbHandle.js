@@ -16,7 +16,7 @@ function createTable(conn) {
         tx.executeSql("CREATE TABLE IF NOT EXISTS events(" +
             "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, type TEXT, date TEXT, time TEXT, organizer TEXT, location TEXT, lat REAL, lng REAL)");
         tx.executeSql("CREATE TABLE IF NOT EXISTS images(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, path TEXT, eid INTEGER, rid INTEGER)");
-        tx.executeSql("CREATE TABLE IF NOT EXISTS reports(id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT)");
+        tx.executeSql("CREATE TABLE IF NOT EXISTS reports(id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, eid INTEGER)");
     }, onDbError);
 }
 
@@ -24,6 +24,7 @@ function dropTable(conn) {
     conn.transaction(function (tx) {
         tx.executeSql("DROP TABLE IF EXISTS events");
         tx.executeSql("DROP TABLE IF EXISTS images");
+        tx.executeSql("DROP TABLE IF EXISTS reports");
     }, onDbError);
 }
 
@@ -34,7 +35,7 @@ function insertEvent(conn, event, callback) {
             function (tx, results) {
                 event.id = results.insertId;
                 callback(event);
-            }, function(tx, err){
+            }, function (tx, err) {
                 console.log(tx);
                 console.log(err);
             });
@@ -93,11 +94,11 @@ function selectEventByMonth(conn, m, callback) {
 }
 
 function searchEvent(conn, searchQuery, searchData, callback) {
-    conn.transaction(function(tx){
+    conn.transaction(function (tx) {
         tx.executeSql(searchQuery, searchData, function (tx, results) {
             var events = [];
             var total = results.rows.length;
-            for (var i = 0; i< total; i++){
+            for (var i = 0; i < total; i++) {
                 var row = results.rows.item(i);
                 events.push(row);
             }
@@ -137,6 +138,52 @@ function deleteImage(conn, id, callback) {
         tx.executeSql("DELETE FROM images WHERE id = ?", [id], function (tx, results) {
             callback('success');
         }, onDbError);
+    });
+}
+
+function insertReport(conn, content, eid, callback) {
+    conn.transaction(function (tx) {
+        tx.executeSql("INSERT INTO reports(content, eid) VALUES(?,?)",
+            [content, eid],
+            function (tx, result) {
+                var report = {
+                    id: result.insertId,
+                    content: content,
+                    eid: eid
+                };
+                callback(report);
+            }, function (tx, err) {
+                console.log(err);
+            }
+        );
+    });
+}
+
+function selectReportByEvent(conn, eid, callback) {
+    conn.transaction(function (tx) {
+        tx.executeSql("SELECT * FROM reports WHERE eid = ?",
+            [eid],
+            function (tx, result) {
+                var reports = [];
+                var total = result.rows.length;
+                for (var i = 0; i < total; i++) {
+                    reports.push(result.rows.item(i));
+                }
+                callback(reports);
+            }, function (tx, err) {
+                console.log(err);
+            });
+    });
+}
+
+function deleteReport(conn, rid, callback) {
+    conn.transaction(function (tx) {
+        tx.executeSql("DELETE FROM reports WHERE id = ?",
+            [rid], function () {
+                callback('success');
+            }, function (tx, err) {
+                console.log(err);
+            });
     });
 }
 
