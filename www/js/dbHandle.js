@@ -60,9 +60,9 @@ function checkEventDuplicate(conn, event, callback) {
 
 function onDuplicateCheck(tx, results, callback) {
     var result = results.rows.item(0);
-    if(result.count > 0){
+    if (result.count > 0) {
         callback('duplicate');
-    }else{
+    } else {
         callback(null);
     }
 
@@ -133,6 +133,15 @@ function searchEvent(conn, searchQuery, searchData, callback) {
             console.log(err);
         });
     }, onError);
+}
+
+function deleteEvent(conn, eid, callback) {
+    conn.transaction(function (tx) {
+        tx.executeSql("DELETE FROM events WHERE id = ?",
+            [eid], function (tx, result) {
+                callback('success');
+            }, onError);
+    });
 }
 
 function insertImage(conn, image, callback) {
