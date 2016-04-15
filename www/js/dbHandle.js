@@ -42,6 +42,32 @@ function insertEvent(conn, event, callback) {
     }, onError);
 }
 
+function checkEventDuplicate(conn, event, callback) {
+    conn.transaction(function (tx) {
+        if (event.lat || event.lng) {
+            tx.executeSql("SELECT COUNT(id) AS count FROM events WHERE name = ? AND type = ? AND date = ? AND organizer = ? AND lat = ? AND lng = ?",
+                [event.name, event.type, event.date, event.organizer, event.lat, event.lng], function (tx, results) {
+                    onDuplicateCheck(tx, results, callback);
+                }, onError);
+        } else {
+            tx.executeSql("SELECT COUNT(id) AS count FROM events WHERE name = ? AND type = ? AND date = ? AND location = ? AND organizer = ?",
+                [event.name, event.type, event.date, event.location, event.organizer], function (tx, results) {
+                    onDuplicateCheck(tx, results, callback);
+                }, onError);
+        }
+    });
+}
+
+function onDuplicateCheck(tx, results, callback) {
+    var result = results.rows.item(0);
+    if(result.count > 0){
+        callback('duplicate');
+    }else{
+        callback(null);
+    }
+
+}
+
 function getEvent(conn, id, callback) {
     conn.transaction(function (tx) {
         tx.executeSql("SELECT * FROM events WHERE id = ?",
@@ -63,7 +89,7 @@ function updateEvent(conn, event, callback) {
     });
 }
 
-function listEvent(conn, callback) {
+function selectEvent(conn, callback) {
     conn.transaction(function (tx) {
         tx.executeSql("SELECT * FROM events", [], function (tx, results) {
             var events = [];

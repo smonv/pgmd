@@ -602,7 +602,13 @@ function validateEvent(event, callback) {
     if (event.organizer == "") {
         err.push("Event organizer is required!");
     }
-    callback(err);
+    checkEventDuplicate(T7.global.conn, event, function (result) {
+        if (result) {
+            err.push("Cannot add duplicate event.");
+        }
+        callback(err);
+    });
+
 }
 
 function thisMonthToString() {
