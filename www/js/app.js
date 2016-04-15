@@ -163,11 +163,11 @@ function startApp() {
             e.preventDefault();
             var buttons = [
                 {
-                    text: 'Edit Event',
+                    text: '<i class="material-icons">mode_edit</i> Edit Event',
                     onClick: onEditEvent
                 },
                 {
-                    text: 'Delete Event',
+                    text: '<i class="material-icons">delete</i> Delete Event',
                     onClick: function () {
                         sendDialogConfirm(
                             'Delete Event',
@@ -178,7 +178,7 @@ function startApp() {
                     }
                 },
                 {
-                    text: 'Mark as ended',
+                    text: '<i class="material-icons">done</i> Mark as ended',
                     onClick: onMarkEnd
                 }
 
@@ -211,6 +211,24 @@ function startApp() {
             if (T7.global.image) {
                 loadEventImage(loadContent);
             }
+        });
+
+        $('a#load-map').on('click', function (e) {
+            e.preventDefault();
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                T7.global.event = {
+                    lat: pos.coords.latitude,
+                    lng: pos.coords.longitude
+                };
+
+                if (T7.global.event) {
+                    loadMap(loadContent);
+                }
+
+            }, function (err) {
+                sendDialogAlert('Please enable Location to use map.', null);
+                console.log(err);
+            }, {maximumAge: 0, timeout: 10000, enableHighAccuracy: true});
         });
     });
 
@@ -305,15 +323,20 @@ function startApp() {
             if (T7.global.event.ended == 0) {
                 e.preventDefault();
                 var content = $('textarea#content').val();
-                insertReport(T7.global.conn, content, T7.global.event.id, function (report) {
-                    $('div.report-list > div.list-block > ul').prepend('<li class="item-content" id="' + report.id + '">' + content + '</li>');
-                    $('div.report-list > div.content-block').prepend(
-                        $('<div>').addClass('card').addClass('report-card').attr('id', report.id).append(
-                            $('<div>').addClass('card-header').append(report.content)
-                        )
-                    );
-                });
-                $('textarea#content').val('');
+                if (content != '') {
+                    insertReport(T7.global.conn, content, T7.global.event.id, function (report) {
+                        $('div.report-list > div.list-block > ul').prepend('<li class="item-content" id="' + report.id + '">' + content + '</li>');
+                        $('div.report-list > div.content-block').prepend(
+                            $('<div>').addClass('card').addClass('report-card').attr('id', report.id).append(
+                                $('<div>').addClass('card-header').append(report.content)
+                            )
+                        );
+                    });
+                    $('textarea#content').val('');
+                } else {
+                    sendNotify('Please enter report content.');
+                }
+
             } else {
                 sendDialogAlert("Cannot create report for ended event.");
             }
