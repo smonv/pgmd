@@ -158,18 +158,33 @@ function startApp() {
     app.onPageInit('event-detail', function () {
         $('div.list-block').removeClass('inputs-list');
 
-        $('a#edit').on('click', function (e) {
-            e.preventDefault();
-            loadEventForm(function (content) {
-                if (content != null) {
-                    mainView.router.loadContent(content);
-                    app.formFromJSON('#event-form', T7.global.event);
-                }
-            });
-        });
-
         selectImageByEvent(T7.global.conn, T7.global.event.id, onSuccessSelectImage);
+        $('a#action').on('click', function (e) {
+            e.preventDefault();
+            var buttons = [
+                {
+                    text: 'Edit Event',
+                    onClick: onEditEvent
+                },
+                {
+                    text: 'Delete Event',
+                    onClick: function () {
+                        sendDialogConfirm(
+                            'Delete Event',
+                            'Are you sure delete this event?',
+                            ['Delete', 'Cancel'],
+                            onDeleteEvent
+                        );
+                    }
+                },
+                {
+                    text: 'Mark as ended',
+                    onClick: onMarkEnd
+                }
 
+            ];
+            app.actions(buttons);
+        });
 
         $('a#choose').on('click', function () {
             getPhoto(Camera.PictureSourceType.PHOTOLIBRARY, onSuccessGetPhoto);
@@ -181,18 +196,6 @@ function startApp() {
 
         $('a#report').on('click', function () {
             loadReport(loadContent);
-        });
-
-        $('a#delete').on('click', function () {
-            sendDialogConfirm(
-                'Delete Event',
-                'Are you sure delete this event?',
-                ['Delete', 'Cancel'],
-                function (buttonIdx) {
-                    if (buttonIdx == 1) {
-                        onDeleteEvent();
-                    }
-                });
         });
 
         $(document).on('click', 'img.event-img', function (e) {
@@ -299,17 +302,21 @@ function startApp() {
             });
         });
         $('form#report-form').on('submit', function (e) {
-            e.preventDefault();
-            var content = $('textarea#content').val();
-            insertReport(T7.global.conn, content, T7.global.event.id, function (report) {
-                $('div.report-list > div.list-block > ul').prepend('<li class="item-content" id="' + report.id + '">' + content + '</li>');
-                $('div.report-list > div.content-block').prepend(
-                    $('<div>').addClass('card').addClass('report-card').attr('id', report.id).append(
-                        $('<div>').addClass('card-header').append(report.content)
-                    )
-                );
-            });
-            $('textarea#content').val('');
+            if (T7.global.event.ended == 0) {
+                e.preventDefault();
+                var content = $('textarea#content').val();
+                insertReport(T7.global.conn, content, T7.global.event.id, function (report) {
+                    $('div.report-list > div.list-block > ul').prepend('<li class="item-content" id="' + report.id + '">' + content + '</li>');
+                    $('div.report-list > div.content-block').prepend(
+                        $('<div>').addClass('card').addClass('report-card').attr('id', report.id).append(
+                            $('<div>').addClass('card-header').append(report.content)
+                        )
+                    );
+                });
+                $('textarea#content').val('');
+            } else {
+                sendDialogAlert("Cannot create report for ended event.");
+            }
         });
         $(document).on('click', 'div.report-card', function (e) {
             var rid = $(this).attr('id');
@@ -473,40 +480,58 @@ function updateOldEvent(event) {
     updateEvent(T7.global.conn, event, onSuccessUpdateEvent);
 }
 
-function onDeleteEvent() {
-    console.log("onDeleteEvent");
-    var cEvent = T7.global.event;
-    var conn = T7.global.conn;
-    selectImageByEvent(conn, cEvent.id, function (results) {
-        $.each(results, function (idx, image) {
-            removeImage(image.path, function (removeImageResult) {
-                if (removeImageResult == 'success') {
-                    deleteImage(conn, image.id, function () {
-                    });
-                }
+function onEditEvent() {
+    T7.global.action = 'Edit';
+    loadEventForm(function (content) {
+        loadContent(content);
+        app.formFromJSON('#event-form', T7.global.event);
+    });
+}
+
+function onDeleteEvent(buttonIdx) {
+    if (buttonIdx == 1) {
+        var cEvent = T7.global.event;
+        var conn = T7.global.conn;
+        selectImageByEvent(conn, cEvent.id, function (results) {
+            $.each(results, function (idx, image) {
+                removeImage(image.path, function (removeImageResult) {
+                    if (removeImageResult == 'success') {
+                        deleteImage(conn, image.id, function () {
+                        });
+                    }
+                });
             });
         });
-    });
 
-    selectReportByEvent(conn, cEvent.id, function (results) {
-        $.each(results, function (idx, report) {
-            deleteReport(conn, report.id, function () {
+        selectReportByEvent(conn, cEvent.id, function (results) {
+            $.each(results, function (idx, report) {
+                deleteReport(conn, report.id, function () {
+                });
             });
         });
+
+        deleteEvent(conn, cEvent.id, function (result) {
+            if (result == 'success') {
+                T7.global.events = T7.global.events.filter(function (obj) {
+                    return obj.id != cEvent.id;
+                });
+
+                filterEvent(T7.global.events);
+                loadEventIndex(reloadContent);
+                sendNotify('Event deleted.');
+                T7.global.event = null;
+            }
+        });
+    }
+}
+
+function onMarkEnd() {
+    var event = T7.global.event;
+    event.ended = 1;
+    updateEvent(T7.global.conn, event, function (result) {
+        T7.global.event = event;
+        sendNotify('This event mark as ended');
     });
-
-    deleteEvent(conn, cEvent.id, function (result) {
-        if (result == 'success') {
-            T7.global.events = T7.global.events.filter(function (obj) {
-                return obj.id != cEvent.id;
-            });
-
-            filterEvent(T7.global.events);
-            loadEventIndex(reloadContent);
-            sendNotify('Event deleted.');
-            T7.global.event = null;
-        }
-    })
 }
 function loadTemplate(template, callback) {
     $.get('templates/' + template + '.html')

@@ -21,6 +21,7 @@
                 {{#if @global.event}}
                 <input type="hidden" id="event-id" name="id" value="{{@global.event.id}}"/>
                 {{/if}}
+                <input type="hidden" id="event-ended" name="ended" value="0">
                 <div class="list-block">
                     <ul>
                         <li>
@@ -91,7 +92,6 @@
                                     <input type="hidden" id="event-lng" name="lng">
                                 </div>
                             </div>
-
                         </li>
                     </ul>
                 </div>

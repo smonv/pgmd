@@ -14,7 +14,9 @@
         </div>
 
         <div class="page-content">
+
             <div class="report-form">
+                {{#js_compare "T7.global.event.ended == 0"}}
                 <form id="report-form">
                     <div class="list-block">
                         <ul>
@@ -35,7 +37,14 @@
                         </ul>
                     </div>
                 </form>
+                {{else}}
+                <div class="content-block">
+                    <div class="content-block-title">This event is ended. You cannot create new report.</div>
+                </div>
+
+                {{/js_compare}}
             </div>
+
 
             <div class="report-list">
                 <div class="content-block">

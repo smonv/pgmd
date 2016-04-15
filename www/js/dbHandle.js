@@ -14,7 +14,7 @@ function connect() {
 function createTable(conn) {
     conn.transaction(function (tx) {
         tx.executeSql("CREATE TABLE IF NOT EXISTS events(" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, type TEXT, date TEXT, time TEXT, organizer TEXT, location TEXT, lat REAL, lng REAL)");
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, type TEXT, date TEXT, time TEXT, organizer TEXT, location TEXT, lat REAL, lng REAL, ended INTEGER)");
         tx.executeSql("CREATE TABLE IF NOT EXISTS images(id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, path TEXT, eid INTEGER, rid INTEGER)");
         tx.executeSql("CREATE TABLE IF NOT EXISTS reports(id INTEGER PRIMARY KEY AUTOINCREMENT, content TEXT, eid INTEGER)");
     }, onDbError);
@@ -30,8 +30,8 @@ function dropTable(conn) {
 
 function insertEvent(conn, event, callback) {
     conn.transaction(function (tx) {
-        tx.executeSql("INSERT INTO events(name, type, date, time, organizer, location, lat, lng) VALUES(?,?,?,?,?,?,?,?)",
-            [event.name, event.type, event.date, event.time, event.organizer, event.location, event.lat, event.lng],
+        tx.executeSql("INSERT INTO events(name, type, date, time, organizer, location, lat, lng, ended) VALUES(?,?,?,?,?,?,?,?,?)",
+            [event.name, event.type, event.date, event.time, event.organizer, event.location, event.lat, event.lng, event.ended],
             function (tx, results) {
                 event.id = results.insertId;
                 callback(event);
@@ -81,10 +81,10 @@ function getEvent(conn, id, callback) {
 
 function updateEvent(conn, event, callback) {
     conn.transaction(function (tx) {
-        tx.executeSql("UPDATE events SET name = ?, date = ?, time = ?, organizer = ?, location = ?, lat = ?, lng = ? WHERE id = ?",
-            [event.name, event.date, event.time, event.organizer, event.location, event.lat, event.lng, event.id],
+        tx.executeSql("UPDATE events SET name = ?, date = ?, time = ?, organizer = ?, location = ?, lat = ?, lng = ?, ended = ? WHERE id = ?",
+            [event.name, event.date, event.time, event.organizer, event.location, event.lat, event.lng, event.ended, event.id],
             callback(event),
-            onDbError
+            onError
         );
     });
 }
