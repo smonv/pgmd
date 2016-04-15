@@ -244,9 +244,9 @@ function startApp() {
 
         $('a#search-submit').on('click', function (e) {
             e.preventDefault();
-            var query = "SELECT * FROM events WHERE ";
-            var searchData = [];
             var formData = app.formToJSON('#search-form');
+            var searchData = [];
+            var query = "SELECT * FROM events WHERE ";
             var keys = Object.keys(formData);
             var idx = -1;
             check:

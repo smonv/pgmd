@@ -36,7 +36,6 @@ function initMap(options, callback) {
     });
 
     $('body').on('click', '.pac-container', function (e) {
-        console.log('clicked');
         e.stopImmediatePropagation();
     });
 }
